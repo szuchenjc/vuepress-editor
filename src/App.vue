@@ -6,8 +6,14 @@ import AppEditor from "./components/AppEditor.vue"
 import { useStore } from "./store/index"
 import { useDoc } from "./tauriApi/utils"
 const store = useStore()
-const { loadDoc, docList, handleDocClick, currentDoc, asyncFileFetcher } =
-  useDoc()
+const {
+  loadDoc,
+  docList,
+  handleDocClick,
+  currentDoc,
+  asyncFileFetcher,
+  uploadImg,
+} = useDoc()
 loadDoc()
 </script>
 
@@ -29,8 +35,9 @@ loadDoc()
         </el-aside>
         <el-main class="p-[10px]">
           <AppEditor
-            :content="currentDoc.content"
+            v-model="currentDoc.content"
             :asyncFileFetcher="asyncFileFetcher"
+            :uploadImg="uploadImg"
           ></AppEditor>
         </el-main>
       </el-container>
