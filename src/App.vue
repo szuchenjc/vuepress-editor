@@ -4,7 +4,10 @@ import AppHeader from "./components/AppHeader.vue"
 import AppAside from "./components/AppAside.vue"
 import AppEditor from "./components/AppEditor.vue"
 import { useStore } from "./store/index"
+import { useDoc } from "./tauriApi/utils"
 const store = useStore()
+const { loadDoc, docList } = useDoc()
+loadDoc()
 </script>
 
 <template>
@@ -12,13 +15,13 @@ const store = useStore()
     <el-aside width="64px">
       <AppMenu></AppMenu>
     </el-aside>
-    <el-container v-if="store.opened">
+    <el-container class="overflow-hidden" v-if="store.opened">
       <el-header height="58px" class="flex items-center flex-row-reverse">
         <AppHeader></AppHeader>
       </el-header>
-      <el-container>
-        <el-aside class="p-[10px]" width="250px">
-          <AppAside></AppAside>
+      <el-container class="overflow-hidden">
+        <el-aside class="h-full p-[10px]" width="250px">
+          <AppAside :docList="docList"></AppAside>
         </el-aside>
         <el-main class="p-[10px]">
           <AppEditor></AppEditor>

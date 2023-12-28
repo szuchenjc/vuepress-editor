@@ -13,7 +13,7 @@ interface AppSidebarItem extends SidebarItem {
 
 export const useDoc = () => {
   // 文档目录
-  const docDir = ref("")
+  const docDir = ref("D:/temp/docs/qianduan-doc/")
   const uncommitDoc = ref<string[]>([])
   const currentNode = ref<Node | null>(null)
   const docList = ref<AppSidebarItem[]>([])
@@ -58,6 +58,7 @@ export const useDoc = () => {
       })
     }
   }
+  // 生成文档节点，并获取文章名字和变更记录
   async function getDocNode(node: string) {
     try {
       const contents = await readTextFile(`${docDir.value}docs${node}`)
@@ -119,5 +120,6 @@ export const useDoc = () => {
   }
   return {
     loadDoc,
+    docList,
   }
 }
