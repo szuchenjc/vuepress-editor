@@ -6,7 +6,8 @@ import AppEditor from "./components/AppEditor.vue"
 import { useStore } from "./store/index"
 import { useDoc } from "./tauriApi/utils"
 const store = useStore()
-const { loadDoc, docList } = useDoc()
+const { loadDoc, docList, handleDocClick, currentDoc, asyncFileFetcher } =
+  useDoc()
 loadDoc()
 </script>
 
@@ -21,10 +22,16 @@ loadDoc()
       </el-header>
       <el-container class="overflow-hidden">
         <el-aside class="h-full p-[10px]" width="250px">
-          <AppAside :docList="docList"></AppAside>
+          <AppAside
+            :docList="docList"
+            :handleDocClick="handleDocClick"
+          ></AppAside>
         </el-aside>
         <el-main class="p-[10px]">
-          <AppEditor></AppEditor>
+          <AppEditor
+            :content="currentDoc.content"
+            :asyncFileFetcher="asyncFileFetcher"
+          ></AppEditor>
         </el-main>
       </el-container>
     </el-container>

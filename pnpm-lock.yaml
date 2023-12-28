@@ -23,6 +23,7 @@ specifiers:
   typescript: ^5.3.3
   unplugin-auto-import: ^0.17.2
   unplugin-vue-components: ^0.26.0
+  uuid: ^9.0.1
   vite: ^5.0.10
   vite-plugin-eslint: ^1.8.1
   vue: ^3.3.13
@@ -36,6 +37,7 @@ dependencies:
   element-plus: 2.4.4_vue@3.3.13
   md-editor-v3: 4.9.0_vue@3.3.13
   pinia: 2.1.7_dembj2eby4ermcojoe7jay3m6m
+  uuid: 9.0.1
   vue: 3.3.13_typescript@5.3.3
 
 devDependencies:
@@ -4125,6 +4127,11 @@ packages:
   /util-deprecate/1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
     dev: true
+
+  /uuid/9.0.1:
+    resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
+    hasBin: true
+    dev: false
 
   /vite-plugin-eslint/1.8.1_eslint@8.56.0+vite@5.0.10:
     resolution: {integrity: sha512-PqdMf3Y2fLO9FsNPmMX+//2BF5SF8nEWspZdgl4kSt7UvHDRHVVfHvxsD7ULYzZrJDGRxR81Nq7TOFgwMnUang==}

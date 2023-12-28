@@ -82,6 +82,10 @@ defineProps({
     type: Array as () => AppSidebarItem[],
     default: () => [],
   },
+  handleDocClick: {
+    type: Function,
+    default: null,
+  },
 })
 // 判断拖拽
 function allowDrop(_draggingNode: Node, dropNode: Node, type: AllowDropType) {
@@ -96,7 +100,7 @@ function allowDrop(_draggingNode: Node, dropNode: Node, type: AllowDropType) {
   }
 }
 function handleDragEnd() {}
-function handleDocClick(_node: Node) {}
+// function handleDocClick(_node: Node) {}
 function handleAddDoc(_node: Node) {}
 function deleteMenu(_node: Node) {}
 </script>

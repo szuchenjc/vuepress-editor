@@ -15,6 +15,7 @@
     "element-plus": "^2.4.4",
     "md-editor-v3": "^4.9.0",
     "pinia": "^2.1.7",
+    "uuid": "^9.0.1",
     "vue": "^3.3.13"
   },
   "devDependencies": {
