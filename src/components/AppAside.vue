@@ -77,12 +77,16 @@ interface AppSidebarItem extends SidebarItem {
   id: string
   children?: AppSidebarItem[]
 }
-defineProps({
+const props = defineProps({
   docList: {
     type: Array as () => AppSidebarItem[],
     default: () => [],
   },
   handleDocClick: {
+    type: Function,
+    default: null,
+  },
+  saveSidebar: {
     type: Function,
     default: null,
   },
@@ -99,7 +103,9 @@ function allowDrop(_draggingNode: Node, dropNode: Node, type: AllowDropType) {
       return true
   }
 }
-function handleDragEnd() {}
+function handleDragEnd() {
+  props.saveSidebar()
+}
 // function handleDocClick(_node: Node) {}
 function handleAddDoc(_node: Node) {}
 function deleteMenu(_node: Node) {}

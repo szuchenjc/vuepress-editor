@@ -11,11 +11,24 @@ import { ElMessageBox, ElTree } from "element-plus"
 import type Node from "element-plus/es/components/tree/src/model/node"
 import type { SidebarItem } from "vuepress"
 import { v4 as uuidv4 } from "uuid"
+import { Command } from "@tauri-apps/api/shell"
+import { resetChildren } from "./doc"
 
 interface AppSidebarItem extends SidebarItem {
   deleted: boolean
   id: string
   children?: AppSidebarItem[]
+}
+
+function noPermission() {
+  ElMessageBox.alert(
+    "权限不足！开发平台建议装在D盘，如果装在C盘，请用管理员权限重新打开",
+    "提示",
+    {
+      confirmButtonText: "确认",
+    },
+  )
+  return Promise.reject()
 }
 
 export async function createFolder(path: string) {
@@ -38,7 +51,7 @@ export async function createFolder(path: string) {
 
 export const useDoc = () => {
   // 文档目录
-  const docDir = ref("D:/temp/docs/knowledge-doc/")
+  const docDir = ref("D:/temp/docs/qianduan-doc/")
   const uncommitDoc = ref<string[]>([])
   const currentNode = ref<Node | null>(null)
   const docList = ref<AppSidebarItem[]>([])
@@ -51,9 +64,27 @@ export const useDoc = () => {
     content: "", // 文档内容
     unCommit: false, // 是否已推送
   })
+  async function getUncommitDoc() {
+    // const loading = ElLoading.service()
+    // 获取所有未上传的变更记录
+    const result = (
+      await new Command("run-git", [
+        "-C",
+        docDir.value,
+        "status",
+        "-u",
+        "-s",
+      ]).execute()
+    ).stdout
+      .split("\n")
+      .filter((t: string) => t)
+      .map((t: string) => t.split(" ").at(-1)!)
+    // loading.close()
+    uncommitDoc.value = result.filter((t: string) => !t?.startsWith("."))
+  }
   // 获取已有文档列表（全量）
   async function loadDoc() {
-    // await getUncommitDoc()
+    await getUncommitDoc()
     const data = await readBinaryFile(
       `${docDir.value}docs/.vuepress/configs/sidebar/data.json`,
     )
@@ -191,6 +222,29 @@ export const useDoc = () => {
     const element = document.getElementById(src) as any
     element.src = `${type},${base64}`
   }
+  async function saveSidebar() {
+    const saveData = docList.value.map((t: any) => {
+      const { id, ...rest } = t
+      if (t.path) {
+        return t.path
+      }
+      return {
+        ...rest,
+        children: resetChildren(JSON.parse(JSON.stringify(t.children))),
+      }
+    })
+    const encoder = new TextEncoder()
+    const data = encoder.encode(JSON.stringify(saveData, null, 2))
+    try {
+      await writeBinaryFile({
+        path: `${docDir.value}docs/.vuepress/configs/sidebar/data.json`,
+        contents: data,
+      })
+    } catch {
+      return noPermission()
+    }
+    await getUncommitDoc()
+  }
   return {
     loadDoc,
     currentDoc,
@@ -198,5 +252,6 @@ export const useDoc = () => {
     handleDocClick,
     uploadImg,
     asyncFileFetcher,
+    saveSidebar,
   }
 }

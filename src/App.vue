@@ -13,6 +13,7 @@ const {
   currentDoc,
   asyncFileFetcher,
   uploadImg,
+  saveSidebar,
 } = useDoc()
 loadDoc()
 </script>
@@ -31,6 +32,7 @@ loadDoc()
           <AppAside
             :docList="docList"
             :handleDocClick="handleDocClick"
+            :saveSidebar="saveSidebar"
           ></AppAside>
         </el-aside>
         <el-main class="p-[10px]">

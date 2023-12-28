@@ -13,8 +13,26 @@
     "allowlist": {
       "all": false,
       "shell": {
-        "all": false,
-        "open": true
+        "all": true,
+        "open": true,
+        "execute": true,
+        "scope": [
+          {
+            "name": "run-git",
+            "cmd": "git",
+            "args": true
+          },
+          {
+            "name": "node",
+            "cmd": "node",
+            "args": true
+          },
+          {
+            "name": "cmd",
+            "cmd": "cmd",
+            "args": true
+          }
+        ]
       },
       "fs": {
         "all": true,
@@ -38,6 +56,7 @@
     },
     "windows": [
       {
+        "fileDropEnabled": false,
         "fullscreen": false,
         "resizable": true,
         "title": "vuepress-editor",
