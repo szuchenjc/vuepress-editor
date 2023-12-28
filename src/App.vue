@@ -2,11 +2,9 @@
 import AppMenu from "./components/AppMenu.vue"
 import AppHeader from "./components/AppHeader.vue"
 import AppAside from "./components/AppAside.vue"
+import AppEditor from "./components/AppEditor.vue"
 import { useStore } from "./store/index"
 const store = useStore()
-// This starter template is using Vue 3 <script setup> SFCs
-// Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
-// import Greet from "./components/Greet.vue"
 </script>
 
 <template>
@@ -19,10 +17,12 @@ const store = useStore()
         <AppHeader></AppHeader>
       </el-header>
       <el-container>
-        <el-aside class="p-[10px]" width="250px" ref="sideRef">
+        <el-aside class="p-[10px]" width="250px">
           <AppAside></AppAside>
         </el-aside>
-        <el-main>Main</el-main>
+        <el-main class="p-[10px]">
+          <AppEditor></AppEditor>
+        </el-main>
       </el-container>
     </el-container>
     <el-container class="flex justify-center items-center" v-else>

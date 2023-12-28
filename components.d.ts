@@ -8,6 +8,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AppAside: typeof import('./src/components/AppAside.vue')['default']
+    AppEditor: typeof import('./src/components/AppEditor.vue')['default']
     AppHeader: typeof import('./src/components/AppHeader.vue')['default']
     AppMenu: typeof import('./src/components/AppMenu.vue')['default']
     ElAside: typeof import('element-plus/es')['ElAside']
