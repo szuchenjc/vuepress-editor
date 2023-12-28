@@ -1,52 +1,42 @@
 <script setup lang="ts">
+import AppMenu from "./components/AppMenu.vue"
+import AppHeader from "./components/AppHeader.vue"
+import AppAside from "./components/AppAside.vue"
+import { useStore } from "./store/index"
+const store = useStore()
 // This starter template is using Vue 3 <script setup> SFCs
 // Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
-import Greet from "./components/Greet.vue";
+// import Greet from "./components/Greet.vue"
 </script>
 
 <template>
-  <div class="container">
-    <h1>Welcome to Tauri!</h1>
-
-    <div class="row">
-      <a href="https://vitejs.dev" target="_blank">
-        <img src="/vite.svg" class="logo vite" alt="Vite logo" />
-      </a>
-      <a href="https://tauri.app" target="_blank">
-        <img src="/tauri.svg" class="logo tauri" alt="Tauri logo" />
-      </a>
-      <a href="https://vuejs.org/" target="_blank">
-        <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-      </a>
-    </div>
-
-    <p>Click on the Tauri, Vite, and Vue logos to learn more.</p>
-
-    <p>
-      Recommended IDE setup:
-      <a href="https://code.visualstudio.com/" target="_blank">VS Code</a>
-      +
-      <a href="https://github.com/johnsoncodehk/volar" target="_blank">Volar</a>
-      +
-      <a href="https://github.com/tauri-apps/tauri-vscode" target="_blank"
-        >Tauri</a
-      >
-      +
-      <a href="https://github.com/rust-lang/rust-analyzer" target="_blank"
-        >rust-analyzer</a
-      >
-    </p>
-
-    <Greet />
-  </div>
+  <el-container class="h-full">
+    <el-aside width="64px">
+      <AppMenu></AppMenu>
+    </el-aside>
+    <el-container v-if="store.opened">
+      <el-header height="58px" class="flex items-center flex-row-reverse">
+        <AppHeader></AppHeader>
+      </el-header>
+      <el-container>
+        <el-aside class="p-[10px]" width="250px" ref="sideRef">
+          <AppAside></AppAside>
+        </el-aside>
+        <el-main>Main</el-main>
+      </el-container>
+    </el-container>
+    <el-container class="flex justify-center items-center" v-else>
+      <el-button class="w-[200px] h-[150px]" @click="store.opened = true">
+        打开项目
+      </el-button>
+    </el-container>
+  </el-container>
 </template>
 
-<style scoped>
-.logo.vite:hover {
-  filter: drop-shadow(0 0 2em #747bff);
-}
-
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #249b73);
+<style>
+html,
+body,
+#app {
+  @apply h-full;
 }
 </style>
