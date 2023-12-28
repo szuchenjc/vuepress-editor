@@ -27,13 +27,17 @@
       <el-icon><icon-menu /></el-icon>
       <template #title>Navigator Two</template>
     </el-menu-item>
-    <el-menu-item index="3" disabled>
+    <!-- <el-menu-item index="3" disabled>
       <el-icon><document /></el-icon>
       <template #title>Navigator Three</template>
+    </el-menu-item> -->
+    <el-menu-item index="vscode">
+      <i class="iconfont icon-vscode text-[20px] text-[#1296db] ml-[2px]"></i>
+      <template #title>vscode打开项目</template>
     </el-menu-item>
-    <el-menu-item index="4">
-      <el-icon><setting /></el-icon>
-      <template #title>Navigator Four</template>
+    <el-menu-item index="webstorm">
+      <i class="iconfont icon-webstorm text-[18px] text-[#1296db] ml-[2px]"></i>
+      <template #title>webstorm打开项目</template>
     </el-menu-item>
     <el-menu-item index="close">
       <el-icon><CloseBold /></el-icon>

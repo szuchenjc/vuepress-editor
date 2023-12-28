@@ -224,6 +224,7 @@ export const useDoc = () => {
   }
   async function saveSidebar() {
     const saveData = docList.value.map((t: any) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { id, ...rest } = t
       if (t.path) {
         return t.path
