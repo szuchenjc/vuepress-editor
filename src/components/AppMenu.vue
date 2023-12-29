@@ -6,12 +6,12 @@
     @select="menuSelect"
   >
     <el-menu-item index="close">
-      <el-icon><HomeFilled /></el-icon>
+      <el-icon class="text-[#2c3e50]"><HomeFilled /></el-icon>
       <template #title>主页</template>
     </el-menu-item>
     <el-sub-menu index="home">
       <template #title>
-        <el-icon><icon-menu /></el-icon>
+        <el-icon class="text-[#2c3e50]"><icon-menu /></el-icon>
       </template>
       <el-menu-item index="newMenu">新建目录</el-menu-item>
       <el-menu-item index="send">上线发布</el-menu-item>
@@ -28,9 +28,25 @@
         <el-menu-item index="1-4-1">item one</el-menu-item>
       </el-sub-menu> -->
     </el-sub-menu>
-
-    <el-menu-item index="2">
-      <i class="iconfont icon-git text-[20px] text-[#1296db] ml-[2px]"></i>
+    <el-menu-item index="save">
+      <i
+        class="iconfont icon-save-fill text-[20px] text-[#1296db] ml-[2px]"
+      ></i>
+      <template #title>保存当前文档</template>
+    </el-menu-item>
+    <el-menu-item index="changes">
+      <el-badge
+        v-if="uncommitDoc.length"
+        :value="uncommitDoc.length"
+        type="primary"
+        class="changes"
+      >
+        <i class="iconfont icon-git text-[20px] text-[#1296db] ml-[2px]"></i>
+      </el-badge>
+      <i
+        v-else
+        class="iconfont icon-git text-[20px] text-[#1296db] ml-[2px]"
+      ></i>
       <template #title>修改记录</template>
     </el-menu-item>
     <!-- <el-menu-item index="3" disabled>
@@ -41,6 +57,11 @@
       <i class="iconfont icon-vscode text-[20px] text-[#1296db] ml-[2px]"></i>
       <template #title>vscode打开项目</template>
     </el-menu-item>
+    <el-menu-item index="delete">
+      <el-icon class="text-[#f89898]"><DeleteFilled /></el-icon>
+      <template #title>删除当前文档</template>
+    </el-menu-item>
+
     <!-- <el-menu-item index="webstorm">
       <i class="iconfont icon-webstorm text-[18px] text-[#1296db] ml-[2px]"></i>
       <template #title>webstorm打开项目</template>
@@ -55,30 +76,68 @@ import {
   // Location,
   // Setting,
   // CloseBold,
+  DeleteFilled,
   HomeFilled,
 } from "@element-plus/icons-vue"
-import { useStore } from "../store/index"
+import { useStore } from "../stores/index"
 import { runVSCode } from "../tauriApi/utils"
 import { ElMessageBox } from "element-plus"
 import bus from "../lib/bus"
+import { useDialog } from "../lib/useDialog"
+import AppHistory from "../components/AppHistory.vue"
 const props = defineProps({
   docDir: {
     type: String,
     default: "",
   },
+  content: {
+    type: String,
+    default: "",
+  },
+  uncommitDoc: {
+    type: Array as () => string[],
+    default: () => [],
+  },
   addMenu: {
     type: Function,
     default: null,
   },
+  loadDoc: {
+    type: Function,
+    default: null,
+  },
+  deleteDoc: {
+    type: Function,
+    default: null,
+  },
+  saveMdFile: {
+    type: Function,
+    default: null,
+  },
 })
+const { show } = useDialog()
 const store = useStore()
 function menuSelect(index: string) {
-  console.log(index)
   switch (index) {
+    case "changes":
+      show(AppHistory, {
+        docDir: props.docDir,
+        currentDoc: props.content,
+      }).then(() => {
+        props.loadDoc()
+      })
+      break
+    case "save":
+      props.saveMdFile()
+      break
+    case "delete":
+      props.deleteDoc()
+      break
     case "close":
       store.opened = false
       break
     case "vscode":
+      console.log("runVSCode")
       runVSCode(props.docDir)
       break
     case "newMenu":
@@ -99,4 +158,9 @@ function menuSelect(index: string) {
 }
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss">
+.changes .el-badge__content {
+  top: 38px !important;
+  right: 12px !important;
+}
+</style>

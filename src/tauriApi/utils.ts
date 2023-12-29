@@ -3,6 +3,7 @@ import {
   exists,
   readBinaryFile,
   readTextFile,
+  removeFile,
   writeBinaryFile,
 } from "@tauri-apps/api/fs"
 import { nextTick, reactive, ref } from "vue"
@@ -54,7 +55,6 @@ export const useDoc = () => {
   const uncommitDoc = ref<string[]>([])
   const currentNode = ref<Node | null>(null)
   const docList = ref<AppSidebarItem[]>([])
-  const treeRef = ref<InstanceType<typeof ElTree>>()
   // 当前编辑的文档
   const currentDoc = reactive({
     id: "",
@@ -108,8 +108,10 @@ export const useDoc = () => {
     // 重新获取数据后，重置当前文档节点
     if (currentNode.value) {
       nextTick(() => {
-        currentNode.value = treeRef.value!.getNode(currentNode.value!.data.path)
-        handleDocClick(currentNode.value.data, currentNode.value)
+        // currentNode.value = treeRef.value!.getNode(currentNode.value!.data.path)
+        bus.emit("getCurrentNode", currentNode.value!.data.path)
+        console.log("重新点击了")
+        handleDocClick(currentNode.value!.data, currentNode.value!)
       })
     }
   }
@@ -173,14 +175,14 @@ export const useDoc = () => {
     const match = text.match(/^#\s*(.*?)\s*$/m)
     return match ? match[1] : "未知标题"
   }
-  async function uploadImg(files: any) {
+  async function uploadImg(files: File[]) {
     // 创建文件夹
     await createFolder(`${docDir.value}docs/.vuepress/public/image`)
     const output = [] as any
     for (let i = 0; i < files.length; i++) {
       const file = files[i]
       const buffer = await file.arrayBuffer()
-      const path = `/image/${uuidv4()}.${file.name.match(/\.([^./]+)$/)[1]}`
+      const path = `/image/${uuidv4()}.${file.name.match(/\.([^./]+)$/)![1]}`
       try {
         await writeBinaryFile({
           path: `${docDir.value}docs/.vuepress/public${path}`,
@@ -307,11 +309,78 @@ export const useDoc = () => {
     })
     await saveSidebar()
     // 重新获取数据
-    // await loadDoc()
     // 定位当前文档为新增文档
     bus.emit("getCurrentNode", path)
-    // currentNode.value = treeRef.value.getNode(path)
     currentDoc.content = `# ${title}`
+  }
+  // 删除文档
+  function deleteDoc() {
+    ElMessageBox.confirm("确定删除此文档吗?", "提示", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    }).then(async () => {
+      if (!currentNode.value) {
+        return
+      }
+      if (currentNode.value.parent.data.children) {
+        currentNode.value.parent.data.children =
+          currentNode.value.parent.data.children.filter(
+            (t: AppSidebarItem) => t.path !== currentNode.value!.data.path,
+          )
+      } else {
+        currentNode.value.parent.data = currentNode.value.parent.data.filter(
+          (t: AppSidebarItem) => t.path !== currentNode.value!.data.path,
+        )
+      }
+      // 删除后，先保存菜单设置
+      await saveSidebar()
+      // 再删除文件
+      await removeFile(`${docDir.value}docs${currentNode.value.data.path}`)
+      currentDoc.content = ""
+      currentNode.value = null
+      loadDoc()
+    })
+  }
+  // 保存文档(物理)
+  async function saveMdFile() {
+    if (!currentNode.value?.data.path) {
+      return
+    }
+    const encoder = new TextEncoder()
+    const data = encoder.encode(
+      currentDoc.content
+        .replace(/{{/g, "&#123;&#123;")
+        .replace(/}}/g, "&#125;&#125;"),
+    )
+    try {
+      await writeBinaryFile({
+        path: `${docDir.value}docs${currentNode.value?.data.path}`,
+        contents: data,
+      })
+    } catch {
+      return noPermission()
+    }
+    ElMessage.success("保存成功")
+    // 暂存
+    await new Command("run-git", [
+      "-C",
+      docDir.value,
+      "add",
+      `docs${currentNode.value!.data.path}`,
+    ]).execute()
+    // 取消暂存 (有时文件一样也是处于修改状态中)
+    await new Command("run-git", [
+      "-C",
+      docDir.value,
+      "restore",
+      "--staged",
+      `docs${currentNode.value!.data.path}`,
+    ]).execute()
+    // 保存文件把侧边栏顺便保存一下（比如缺了文件，侧边栏自我修复）
+    await saveSidebar()
+    // 刷新数据
+    await loadDoc()
   }
   return {
     docDir,
@@ -326,5 +395,9 @@ export const useDoc = () => {
     runVSCode,
     addMenu,
     addDoc,
+    deleteDoc,
+    deleteMenu,
+    saveMdFile,
+    uncommitDoc,
   }
 }

@@ -77,16 +77,19 @@ import {
 import { ref } from "vue"
 import { ElMessageBox } from "element-plus"
 import { AppSidebarItem } from "../tauriApi/type"
+import { ElTree } from "element-plus"
+import { PropType } from "vue"
 const emit = defineEmits(["update:modelValue"])
-const treeRef = ref()
+const treeRef = ref<InstanceType<typeof ElTree>>()
 bus.on("addMenu", scrollBottom)
 bus.on("getCurrentNode", getCurrentNode)
 const sideRef = ref()
-function getCurrentNode(path: any) {
-  emit("update:modelValue", treeRef.value.getNode(path))
+function getCurrentNode(path: unknown) {
+  console.log("触发更新了")
+  emit("update:modelValue", treeRef.value!.getNode(path as string))
 }
 function scrollBottom() {
-  const scrollContainer = sideRef.value
+  const scrollContainer = sideRef.value!
   scrollContainer.$el.scrollTop = scrollContainer.$el.scrollHeight
 }
 const props = defineProps({
@@ -102,8 +105,12 @@ const props = defineProps({
     type: Function,
     default: null,
   },
-  handleDocClick: {
+  deleteMenu: {
     type: Function,
+    default: null,
+  },
+  handleDocClick: {
+    type: Function as PropType<(...args: any[]) => void>,
     default: null,
   },
   saveSidebar: {
@@ -137,7 +144,6 @@ function handleAddDoc(node: Node) {
     await props.addDoc(node, value)
   })
 }
-function deleteMenu(_node: Node) {}
 </script>
 
 <style lang="scss" scoped></style>

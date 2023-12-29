@@ -3,7 +3,7 @@ import AppMenu from "./components/AppMenu.vue"
 import AppHeader from "./components/AppHeader.vue"
 import AppAside from "./components/AppAside.vue"
 import AppEditor from "./components/AppEditor.vue"
-import { useStore } from "./store/index"
+import { useStore } from "./stores/index"
 import { useDoc } from "./tauriApi/utils"
 const store = useStore()
 const {
@@ -18,6 +18,10 @@ const {
   saveSidebar,
   addMenu,
   addDoc,
+  deleteMenu,
+  deleteDoc,
+  saveMdFile,
+  uncommitDoc,
 } = useDoc()
 loadDoc()
 </script>
@@ -25,10 +29,18 @@ loadDoc()
 <template>
   <el-container class="h-full">
     <el-aside width="64px">
-      <AppMenu :docDir="docDir" :addMenu="addMenu"></AppMenu>
+      <AppMenu
+        :docDir="docDir"
+        :addMenu="addMenu"
+        :deleteDoc="deleteDoc"
+        :saveMdFile="saveMdFile"
+        :content="currentDoc.content"
+        :uncommitDoc="uncommitDoc"
+        :loadDoc="loadDoc"
+      ></AppMenu>
     </el-aside>
     <el-container class="overflow-hidden" v-if="store.opened">
-      <el-header height="58px" class="flex items-center flex-row-reverse">
+      <el-header height="58px" class="px-[5px]">
         <AppHeader></AppHeader>
       </el-header>
       <el-container class="overflow-hidden">
@@ -38,6 +50,7 @@ loadDoc()
           :addDoc="addDoc"
           :handleDocClick="handleDocClick"
           :saveSidebar="saveSidebar"
+          :deleteMenu="deleteMenu"
         ></AppAside>
         <el-main class="p-[10px]">
           <AppEditor
@@ -63,3 +76,4 @@ body,
   @apply h-full;
 }
 </style>
+./stores/index

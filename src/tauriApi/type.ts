@@ -5,4 +5,5 @@ export interface AppSidebarItem extends SidebarItem {
   id?: string
   children?: AppSidebarItem[]
   collapsible?: boolean
+  path?: string
 }
