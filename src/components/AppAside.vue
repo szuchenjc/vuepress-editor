@@ -65,7 +65,6 @@
 </template>
 
 <script lang="ts" setup>
-import type { SidebarItem } from "vuepress"
 import type { AllowDropType } from "element-plus/es/components/tree/src/tree.type"
 import type Node from "element-plus/es/components/tree/src/model/node"
 import bus from "../lib/bus"
@@ -77,6 +76,7 @@ import {
 } from "@element-plus/icons-vue"
 import { ref } from "vue"
 import { ElMessageBox } from "element-plus"
+import { AppSidebarItem } from "../tauriApi/type"
 const emit = defineEmits(["update:modelValue"])
 const treeRef = ref()
 bus.on("addMenu", scrollBottom)
@@ -88,11 +88,6 @@ function getCurrentNode(path: any) {
 function scrollBottom() {
   const scrollContainer = sideRef.value
   scrollContainer.$el.scrollTop = scrollContainer.$el.scrollHeight
-}
-interface AppSidebarItem extends SidebarItem {
-  deleted: boolean
-  id: string
-  children?: AppSidebarItem[]
 }
 const props = defineProps({
   docList: {

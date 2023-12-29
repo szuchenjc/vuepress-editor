@@ -9,18 +9,11 @@ import { nextTick, reactive, ref } from "vue"
 import { TreeNodeData } from "element-plus/lib/components/tree/src/tree.type"
 import { ElMessage, ElMessageBox, ElTree } from "element-plus"
 import type Node from "element-plus/es/components/tree/src/model/node"
-import type { SidebarItem } from "vuepress"
 import { v4 as uuidv4 } from "uuid"
 import { Command } from "@tauri-apps/api/shell"
 import { resetChildren } from "./doc"
 import bus from "../lib/bus"
-
-interface AppSidebarItem extends SidebarItem {
-  deleted?: boolean
-  id?: string
-  children?: AppSidebarItem[]
-  collapsible?: boolean
-}
+import { AppSidebarItem } from "./type"
 
 export async function runVSCode(path: string) {
   await new Command("cmd", ["/C", "code", path]).execute()
