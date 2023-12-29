@@ -17,6 +17,7 @@ specifiers:
   eslint-plugin-prettier: ^5.1.1
   eslint-plugin-vue: ^9.19.2
   md-editor-v3: ^4.9.0
+  mitt: ^3.0.1
   pinia: ^2.1.7
   postcss: ^8.4.32
   prettier: ^3.1.1
@@ -37,6 +38,7 @@ dependencies:
   '@tauri-apps/api': 1.5.3
   element-plus: 2.4.4_vue@3.3.13
   md-editor-v3: 4.9.0_vue@3.3.13
+  mitt: 3.0.1
   pinia: 2.1.7_dembj2eby4ermcojoe7jay3m6m
   uuid: 9.0.1
   vue: 3.3.13_typescript@5.3.3
@@ -3250,6 +3252,10 @@ packages:
     resolution: {integrity: sha512-jYofLM5Dam9279rdkWzqHozUo4ybjdZmCsDHePy5V/PbBcVMiSZR97gmAy45aqi8CK1lG2ECd356FU86avfwUQ==}
     engines: {node: '>=16 || 14 >=14.17'}
     dev: true
+
+  /mitt/3.0.1:
+    resolution: {integrity: sha512-vKivATfr97l2/QBCYAkXYDbrIWPM2IIKEl7YPhjCvKlG3kE2gm+uBo6nEXK3M5/Ffh/FLpKExzOQ3JJoJGFKBw==}
+    dev: false
 
   /mlly/1.4.2:
     resolution: {integrity: sha512-i/Ykufi2t1EZ6NaPLdfnZk2AX8cs0d+mTzVKuPfqPKPatxLApaBoxJQ9x1/uckXtrS/U5oisPMDkNs0yQTaBRg==}

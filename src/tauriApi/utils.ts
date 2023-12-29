@@ -7,17 +7,23 @@ import {
 } from "@tauri-apps/api/fs"
 import { nextTick, reactive, ref } from "vue"
 import { TreeNodeData } from "element-plus/lib/components/tree/src/tree.type"
-import { ElMessageBox, ElTree } from "element-plus"
+import { ElMessage, ElMessageBox, ElTree } from "element-plus"
 import type Node from "element-plus/es/components/tree/src/model/node"
 import type { SidebarItem } from "vuepress"
 import { v4 as uuidv4 } from "uuid"
 import { Command } from "@tauri-apps/api/shell"
 import { resetChildren } from "./doc"
+import bus from "../lib/bus"
 
 interface AppSidebarItem extends SidebarItem {
-  deleted: boolean
-  id: string
+  deleted?: boolean
+  id?: string
   children?: AppSidebarItem[]
+  collapsible?: boolean
+}
+
+export async function runVSCode(path: string) {
+  await new Command("cmd", ["/C", "code", path]).execute()
 }
 
 function noPermission() {
@@ -219,7 +225,7 @@ export const useDoc = () => {
         "",
       ),
     )
-    const element = document.getElementById(src) as any
+    const element = document.getElementById(src) as HTMLImageElement
     element.src = `${type},${base64}`
   }
   async function saveSidebar() {
@@ -246,13 +252,86 @@ export const useDoc = () => {
     }
     await getUncommitDoc()
   }
+  // 新增菜单
+  async function addMenu(name: string) {
+    if (docList.value.some((t) => t.text === name)) {
+      return ElMessage.error("目录名称已存在")
+    }
+    docList.value.push({
+      text: name,
+      collapsible: true,
+      children: [],
+    })
+    await saveSidebar()
+  }
+  // 删除目录
+  function deleteMenu(node: Node) {
+    ElMessageBox.confirm("确定删除此目录吗?", "提示", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    }).then(async () => {
+      // 如果删除根目录
+      // 第一层是拷贝，用真实数据删除
+      if (node.parent.parent === null) {
+        docList.value = docList.value.filter(
+          (t: any) => t.text !== node.data.text,
+        )
+      } else {
+        // 下面是浅拷贝
+        node.parent.data.children = node.parent.data.children.filter(
+          (t: AppSidebarItem) => t.text !== node.data.text,
+        )
+      }
+      // 删除后，先保存菜单设置
+      await saveSidebar()
+    })
+  }
+  async function addDoc(node: Node, title: string) {
+    // 创建文件夹
+    await createFolder(`${docDir.value}docs/article`)
+    // 创建md文件
+    const fileName = uuidv4()
+    const encoder = new TextEncoder()
+    const contents = encoder.encode(`# ${title}`)
+    const path = `/article/${fileName}.md`
+    try {
+      await writeBinaryFile({
+        path: `${docDir.value}docs${path}`,
+        contents,
+      })
+    } catch {
+      return noPermission()
+    }
+    // 修改菜单配置
+    node.data.children.push({
+      id: path,
+      text: title,
+      path,
+      leaf: true,
+      deleted: false,
+      unCommit: true,
+    })
+    await saveSidebar()
+    // 重新获取数据
+    // await loadDoc()
+    // 定位当前文档为新增文档
+    bus.emit("getCurrentNode", path)
+    // currentNode.value = treeRef.value.getNode(path)
+    currentDoc.content = `# ${title}`
+  }
   return {
+    docDir,
     loadDoc,
     currentDoc,
+    currentNode,
     docList,
     handleDocClick,
     uploadImg,
     asyncFileFetcher,
     saveSidebar,
+    runVSCode,
+    addMenu,
+    addDoc,
   }
 }

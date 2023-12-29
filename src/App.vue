@@ -7,6 +7,8 @@ import { useStore } from "./store/index"
 import { useDoc } from "./tauriApi/utils"
 const store = useStore()
 const {
+  docDir,
+  currentNode,
   loadDoc,
   docList,
   handleDocClick,
@@ -14,6 +16,8 @@ const {
   asyncFileFetcher,
   uploadImg,
   saveSidebar,
+  addMenu,
+  addDoc,
 } = useDoc()
 loadDoc()
 </script>
@@ -21,20 +25,20 @@ loadDoc()
 <template>
   <el-container class="h-full">
     <el-aside width="64px">
-      <AppMenu></AppMenu>
+      <AppMenu :docDir="docDir" :addMenu="addMenu"></AppMenu>
     </el-aside>
     <el-container class="overflow-hidden" v-if="store.opened">
       <el-header height="58px" class="flex items-center flex-row-reverse">
         <AppHeader></AppHeader>
       </el-header>
       <el-container class="overflow-hidden">
-        <el-aside class="h-full p-[10px]" width="250px">
-          <AppAside
-            :docList="docList"
-            :handleDocClick="handleDocClick"
-            :saveSidebar="saveSidebar"
-          ></AppAside>
-        </el-aside>
+        <AppAside
+          v-model="currentNode"
+          :docList="docList"
+          :addDoc="addDoc"
+          :handleDocClick="handleDocClick"
+          :saveSidebar="saveSidebar"
+        ></AppAside>
         <el-main class="p-[10px]">
           <AppEditor
             v-model="currentDoc.content"
