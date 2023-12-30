@@ -34,7 +34,7 @@ loadDoc()
         :addMenu="addMenu"
         :deleteDoc="deleteDoc"
         :saveMdFile="saveMdFile"
-        :content="currentDoc.content"
+        :currentDoc="currentDoc"
         :uncommitDoc="uncommitDoc"
         :loadDoc="loadDoc"
       ></AppMenu>
@@ -54,7 +54,7 @@ loadDoc()
         ></AppAside>
         <el-main class="p-[10px]">
           <AppEditor
-            v-model="currentDoc.content"
+            v-model="currentDoc"
             :asyncFileFetcher="asyncFileFetcher"
             :uploadImg="uploadImg"
           ></AppEditor>
@@ -76,4 +76,3 @@ body,
   @apply h-full;
 }
 </style>
-./stores/index

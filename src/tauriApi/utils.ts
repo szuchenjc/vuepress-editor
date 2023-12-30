@@ -6,19 +6,15 @@ import {
   removeFile,
   writeBinaryFile,
 } from "@tauri-apps/api/fs"
-import { nextTick, reactive, ref } from "vue"
+import bus from "../lib/bus"
+import { nextTick, ref } from "vue"
 import { TreeNodeData } from "element-plus/lib/components/tree/src/tree.type"
-import { ElMessage, ElMessageBox, ElTree } from "element-plus"
-import type Node from "element-plus/es/components/tree/src/model/node"
+import { ElMessage, ElMessageBox } from "element-plus"
 import { v4 as uuidv4 } from "uuid"
 import { Command } from "@tauri-apps/api/shell"
 import { resetChildren } from "./doc"
-import bus from "../lib/bus"
 import { AppSidebarItem } from "./type"
-
-export async function runVSCode(path: string) {
-  await new Command("cmd", ["/C", "code", path]).execute()
-}
+import type Node from "element-plus/es/components/tree/src/model/node"
 
 function noPermission() {
   ElMessageBox.alert(
@@ -31,11 +27,17 @@ function noPermission() {
   return Promise.reject()
 }
 
+// 运行vscode
+export async function runVSCode(path: string) {
+  await new Command("cmd", ["/C", "code", path]).execute()
+}
+
+// 递归创建文件架
 export async function createFolder(path: string) {
   if (path.endsWith("/") || path.endsWith("\\")) {
     path = path.slice(0, -1)
   }
-  const existPath = (await exists(path)) as unknown as boolean
+  const existPath = await exists(path)
   if (!existPath) {
     if (path.includes("\\")) {
       const perPath = path.substring(0, path.lastIndexOf("\\"))
@@ -51,18 +53,15 @@ export async function createFolder(path: string) {
 
 export const useDoc = () => {
   // 文档目录
-  const docDir = ref("D:/temp/docs/qianduan-doc/")
+  const docDir = ref("E:/code/qianduan-doc/")
+  // 未提交记录（修改记录）
   const uncommitDoc = ref<string[]>([])
+  // 当前选中的文章（eltree节点）
   const currentNode = ref<Node | null>(null)
+  // 所有文章（eltree数据源）
   const docList = ref<AppSidebarItem[]>([])
   // 当前编辑的文档
-  const currentDoc = reactive({
-    id: "",
-    title: "", // 标题
-    path: "", // 文件路径
-    content: "", // 文档内容
-    unCommit: false, // 是否已推送
-  })
+  const currentDoc = ref("")
   async function getUncommitDoc() {
     // const loading = ElLoading.service()
     // 获取所有未上传的变更记录
@@ -166,7 +165,7 @@ export const useDoc = () => {
     }
     currentNode.value = node
     const contents = await readTextFile(`${docDir.value}docs${data.path}`)
-    currentDoc.content = contents
+    currentDoc.value = contents
       .replace(/&#123;&#123;/g, "{{")
       .replace(/&#125;&#125;/g, "{{")
   }
@@ -311,7 +310,7 @@ export const useDoc = () => {
     // 重新获取数据
     // 定位当前文档为新增文档
     bus.emit("getCurrentNode", path)
-    currentDoc.content = `# ${title}`
+    currentDoc.value = `# ${title}`
   }
   // 删除文档
   function deleteDoc() {
@@ -337,7 +336,7 @@ export const useDoc = () => {
       await saveSidebar()
       // 再删除文件
       await removeFile(`${docDir.value}docs${currentNode.value.data.path}`)
-      currentDoc.content = ""
+      currentDoc.value = ""
       currentNode.value = null
       loadDoc()
     })
@@ -349,7 +348,7 @@ export const useDoc = () => {
     }
     const encoder = new TextEncoder()
     const data = encoder.encode(
-      currentDoc.content
+      currentDoc.value
         .replace(/{{/g, "&#123;&#123;")
         .replace(/}}/g, "&#125;&#125;"),
     )

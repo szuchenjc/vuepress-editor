@@ -8,7 +8,8 @@
     "prettier"
   ],
   "rules": {
-    "vue/multi-word-component-names": "off"
+    "vue/multi-word-component-names": "off",
+    "vue/valid-v-bind": "off"
   },
   "parserOptions": {
     "ecmaVersion": "latest"

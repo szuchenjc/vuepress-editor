@@ -90,7 +90,7 @@ const props = defineProps({
     type: String,
     default: "",
   },
-  content: {
+  currentDoc: {
     type: String,
     default: "",
   },
@@ -122,7 +122,7 @@ function menuSelect(index: string) {
     case "changes":
       show(AppHistory, {
         docDir: props.docDir,
-        currentDoc: props.content,
+        currentDoc: props.currentDoc,
       }).then(() => {
         props.loadDoc()
       })
