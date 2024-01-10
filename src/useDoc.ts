@@ -13,7 +13,9 @@ import {
   createFolder,
   readFileAsJson,
   runVSCode,
+  selectFolder,
 } from "./tauri/api"
+import { useStore } from "./stores"
 
 function noPermission() {
   ElMessageBox.alert(
@@ -27,8 +29,9 @@ function noPermission() {
 }
 
 export const useDoc = () => {
+  const store = useStore()
   // 文档目录
-  const docDir = ref("D:/Program Files/筑龙开发平台/docs/qianduan-doc/")
+  const docDir = ref("")
   // 未提交记录（修改记录）
   const uncommitDoc = ref<string[]>([])
   // 当前选中的文章（eltree节点）
@@ -40,7 +43,7 @@ export const useDoc = () => {
   // 新增文档
   async function addDoc(node: Node, title: string) {
     // 创建文件夹
-    await createFolder(`${docDir.value}docs/article`)
+    await createFolder(`${docDir.value}/docs/article`)
     // 创建md文件
     const fileName = uuidv4()
     const encoder = new TextEncoder()
@@ -48,7 +51,7 @@ export const useDoc = () => {
     const path = `/article/${fileName}.md`
     try {
       await writeBinaryFile({
-        path: `${docDir.value}docs${path}`,
+        path: `${docDir.value}/docs${path}`,
         contents,
       })
     } catch {
@@ -83,11 +86,11 @@ export const useDoc = () => {
   }
   // 自定义异步获取图片函数，这里使用了 Promise 模拟异步操作
   async function asyncFileFetcher(src: string) {
-    let filePath = `${docDir.value}docs/.vuepress/public${decodeURIComponent(
+    let filePath = `${docDir.value}/docs/.vuepress/public${decodeURIComponent(
       src,
     )}`
     if (src.startsWith(".")) {
-      filePath = `${docDir.value}docs${currentNode.value!.data.path.replace(
+      filePath = `${docDir.value}/docs${currentNode.value!.data.path.replace(
         /\/[^/]+$/,
         "/",
       )}${decodeURIComponent(src)}`
@@ -142,7 +145,7 @@ export const useDoc = () => {
       // 删除后，先保存菜单设置
       await saveSidebar()
       // 再删除文件
-      await removeFile(`${docDir.value}docs${currentNode.value.data.path}`)
+      await removeFile(`${docDir.value}/docs${currentNode.value.data.path}`)
       currentDoc.value = ""
       currentNode.value = null
       loadDoc()
@@ -151,7 +154,7 @@ export const useDoc = () => {
   // 生成文档节点，并获取文章名字和变更记录
   async function getDocNode(node: string) {
     try {
-      const contents = await readTextFile(`${docDir.value}docs${node}`)
+      const contents = await readTextFile(`${docDir.value}/docs${node}`)
       return {
         id: node,
         text: getTitle(contents),
@@ -196,16 +199,31 @@ export const useDoc = () => {
       return
     }
     currentNode.value = node
-    const contents = await readTextFile(`${docDir.value}docs${data.path}`)
+    const contents = await readTextFile(`${docDir.value}/docs${data.path}`)
     currentDoc.value = contents
       .replace(/&#123;&#123;/g, "{{")
       .replace(/&#125;&#125;/g, "{{")
   }
+  async function handleImport() {
+    const folderPath = await selectFolder()
+    if (folderPath) {
+      docDir.value = folderPath
+      store.opened = true
+      if (!store.projectDirList.includes(folderPath)) {
+        store.projectDirList.push(folderPath)
+      }
+      await loadDoc()
+      console.log(docList)
+    }
+  }
   // 获取已有文档列表（全量）
   async function loadDoc() {
+    if (!docDir.value) {
+      return
+    }
     await getUncommitDoc()
     const arr = await readFileAsJson<AppSidebarItem[]>(
-      `${docDir.value}docs/.vuepress/configs/sidebar/data.json`,
+      `${docDir.value}/docs/.vuepress/configs/sidebar/data.json`,
     )
     for (let j = arr.length - 1; j >= 0; j--) {
       const node = arr[j]
@@ -217,6 +235,7 @@ export const useDoc = () => {
         }
       } else {
         node.id = node.text
+        console.log(node.children)
         await setChildren(node.children)
       }
     }
@@ -240,6 +259,7 @@ export const useDoc = () => {
       {
         const child = children[i]
         if (typeof child === "string") {
+          console.log(child)
           children[i] = await getDocNode(child)
           if (children[i].deleted) {
             // 文件不存在，删除菜单配置
@@ -265,7 +285,7 @@ export const useDoc = () => {
     )
     try {
       await writeBinaryFile({
-        path: `${docDir.value}docs${currentNode.value?.data.path}`,
+        path: `${docDir.value}/docs${currentNode.value?.data.path}`,
         contents: data,
       })
     } catch {
@@ -309,7 +329,7 @@ export const useDoc = () => {
     const data = encoder.encode(JSON.stringify(saveData, null, 2))
     try {
       await writeBinaryFile({
-        path: `${docDir.value}docs/.vuepress/configs/sidebar/data.json`,
+        path: `${docDir.value}/docs/.vuepress/configs/sidebar/data.json`,
         contents: data,
       })
     } catch {
@@ -320,7 +340,7 @@ export const useDoc = () => {
   // 上传图片
   async function uploadImg(files: File[]) {
     // 创建文件夹
-    await createFolder(`${docDir.value}docs/.vuepress/public/image`)
+    await createFolder(`${docDir.value}/docs/.vuepress/public/image`)
     const output = [] as any
     for (let i = 0; i < files.length; i++) {
       const file = files[i]
@@ -328,7 +348,7 @@ export const useDoc = () => {
       const path = `/image/${uuidv4()}.${file.name.match(/\.([^./]+)$/)![1]}`
       try {
         await writeBinaryFile({
-          path: `${docDir.value}docs/.vuepress/public${path}`,
+          path: `${docDir.value}/docs/.vuepress/public${path}`,
           contents: new Uint8Array(buffer),
         })
       } catch {
@@ -359,6 +379,7 @@ export const useDoc = () => {
     deleteDoc,
     deleteMenu,
     handleDocClick,
+    handleImport,
     loadDoc,
     saveMdFile,
     uploadImg,

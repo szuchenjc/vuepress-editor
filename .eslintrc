@@ -9,7 +9,8 @@
   ],
   "rules": {
     "vue/multi-word-component-names": "off",
-    "vue/valid-v-bind": "off"
+    "vue/valid-v-bind": "off",
+    "no-debugger": "off"
   },
   "parserOptions": {
     "ecmaVersion": "latest"

@@ -239,7 +239,7 @@ const confirm = async () => {
       if (mdList.length > 0) {
         // 获取菜单，把md文件新增进去
         const data = await readBinaryFile(
-          `${props.docDir}docs/.vuepress/configs/sidebar/data.json`,
+          `${props.docDir}/docs/.vuepress/configs/sidebar/data.json`,
         )
         const decoder = new TextDecoder()
         const content = decoder.decode(data)
@@ -250,7 +250,7 @@ const confirm = async () => {
         const encoder = new TextEncoder()
         const data2 = encoder.encode(JSON.stringify(arr, null, 2))
         await writeBinaryFile({
-          path: `${props.docDir}docs/.vuepress/configs/sidebar/data.json`,
+          path: `${props.docDir}/docs/.vuepress/configs/sidebar/data.json`,
           contents: data2,
         })
         if (pushCount.value > 2) {

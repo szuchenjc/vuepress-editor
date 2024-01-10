@@ -1,5 +1,7 @@
 import { Command } from "@tauri-apps/api/shell"
+import { open } from "@tauri-apps/api/dialog"
 import { createDir, exists, readBinaryFile } from "@tauri-apps/api/fs"
+import { appConfigDir } from "@tauri-apps/api/path"
 
 // 运行vscode
 export async function runVSCode(path: string) {
@@ -47,4 +49,17 @@ export async function convertFileToDataUri(
     ),
   )
   return `${type},${base64}`
+}
+
+// 选择文件夹
+export async function selectFolder() {
+  const selected = await open({
+    directory: true,
+    multiple: false,
+    defaultPath: await appConfigDir(),
+  })
+  if (selected === null) {
+    return ""
+  }
+  return selected as string
 }

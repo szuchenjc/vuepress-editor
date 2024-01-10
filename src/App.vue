@@ -18,6 +18,7 @@ const {
   deleteDoc,
   deleteMenu,
   handleDocClick,
+  handleImport,
   loadDoc,
   saveMdFile,
   saveSidebar,
@@ -62,7 +63,7 @@ loadDoc()
       </el-container>
     </el-container>
     <el-container class="flex justify-center items-center" v-else>
-      <el-button class="w-[200px] h-[150px]" @click="store.opened = true">
+      <el-button class="w-[200px] h-[150px]" @click="handleImport">
         打开项目
       </el-button>
     </el-container>
