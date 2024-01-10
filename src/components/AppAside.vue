@@ -76,7 +76,7 @@ import {
 } from "@element-plus/icons-vue"
 import { ref } from "vue"
 import { ElMessageBox } from "element-plus"
-import { AppSidebarItem } from "../tauriApi/type"
+import { AppSidebarItem } from "../type"
 import { ElTree } from "element-plus"
 import { PropType } from "vue"
 const emit = defineEmits(["update:modelValue"])

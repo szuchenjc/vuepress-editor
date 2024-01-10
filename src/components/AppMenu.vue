@@ -80,11 +80,11 @@ import {
   HomeFilled,
 } from "@element-plus/icons-vue"
 import { useStore } from "../stores/index"
-import { runVSCode } from "../tauriApi/utils"
 import { ElMessageBox } from "element-plus"
 import bus from "../lib/bus"
 import { useDialog } from "../lib/useDialog"
 import AppHistory from "../components/AppHistory.vue"
+import { runVSCode } from "../tauri/api"
 const props = defineProps({
   docDir: {
     type: String,

@@ -1,4 +1,4 @@
-import { AppSidebarItem } from "./type"
+import { AppSidebarItem } from "../type"
 
 interface AppSidebarItemOut extends Omit<AppSidebarItem, "children"> {
   deleted?: boolean
@@ -29,4 +29,10 @@ export function resetChildren(
       return child
     }
   })
+}
+
+// 获取标题
+export function getTitle(text: string) {
+  const match = text.match(/^#\s*(.*?)\s*$/m)
+  return match ? match[1] : "未知标题"
 }

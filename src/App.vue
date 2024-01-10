@@ -4,24 +4,24 @@ import AppHeader from "./components/AppHeader.vue"
 import AppAside from "./components/AppAside.vue"
 import AppEditor from "./components/AppEditor.vue"
 import { useStore } from "./stores/index"
-import { useDoc } from "./tauriApi/utils"
+import { useDoc } from "./useDoc"
 const store = useStore()
 const {
   docDir,
-  currentNode,
-  loadDoc,
   docList,
-  handleDocClick,
   currentDoc,
-  asyncFileFetcher,
-  uploadImg,
-  saveSidebar,
-  addMenu,
-  addDoc,
-  deleteMenu,
-  deleteDoc,
-  saveMdFile,
+  currentNode,
   uncommitDoc,
+  addDoc,
+  addMenu,
+  asyncFileFetcher,
+  deleteDoc,
+  deleteMenu,
+  handleDocClick,
+  loadDoc,
+  saveMdFile,
+  saveSidebar,
+  uploadImg,
 } = useDoc()
 loadDoc()
 </script>
@@ -31,11 +31,11 @@ loadDoc()
     <el-aside width="64px">
       <AppMenu
         :docDir="docDir"
+        :currentDoc="currentDoc"
+        :uncommitDoc="uncommitDoc"
         :addMenu="addMenu"
         :deleteDoc="deleteDoc"
         :saveMdFile="saveMdFile"
-        :currentDoc="currentDoc"
-        :uncommitDoc="uncommitDoc"
         :loadDoc="loadDoc"
       ></AppMenu>
     </el-aside>
