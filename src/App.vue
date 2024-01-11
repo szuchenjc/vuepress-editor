@@ -7,7 +7,6 @@ import { useStore } from "./stores/index"
 import { useDoc } from "./useDoc"
 const store = useStore()
 const {
-  docDir,
   docList,
   currentDoc,
   currentNode,
@@ -31,7 +30,6 @@ loadDoc()
   <el-container class="h-full">
     <el-aside width="64px">
       <AppMenu
-        :docDir="docDir"
         :currentDoc="currentDoc"
         :uncommitDoc="uncommitDoc"
         :addMenu="addMenu"
@@ -40,7 +38,7 @@ loadDoc()
         :loadDoc="loadDoc"
       ></AppMenu>
     </el-aside>
-    <el-container class="overflow-hidden" v-if="store.opened">
+    <el-container class="overflow-hidden" v-if="store.docFolder">
       <el-header height="58px" class="px-[5px]">
         <AppHeader></AppHeader>
       </el-header>

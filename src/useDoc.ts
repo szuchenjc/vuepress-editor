@@ -1,4 +1,4 @@
-import { readTextFile, removeFile, writeBinaryFile } from "@tauri-apps/api/fs"
+import { readTextFile, removeFile } from "@tauri-apps/api/fs"
 import bus from "./lib/bus"
 import { nextTick, ref } from "vue"
 import { TreeNodeData } from "element-plus/lib/components/tree/src/tree.type"
@@ -11,27 +11,26 @@ import type Node from "element-plus/es/components/tree/src/model/node"
 import {
   convertFileToDataUri,
   createFolder,
+  gitCheck,
   readFileAsJson,
   runVSCode,
   selectFolder,
+  writeImageFile,
+  writeJsonFile,
+  writeMarkdownFile,
 } from "./tauri/api"
 import { useStore } from "./stores"
 
-function noPermission() {
-  ElMessageBox.alert(
-    "权限不足！开发平台建议装在D盘，如果装在C盘，请用管理员权限重新打开",
-    "提示",
-    {
-      confirmButtonText: "确认",
-    },
-  )
+function showErrorMessage(error: unknown) {
+  console.log(error)
+  ElMessageBox.alert((error as Error)?.message, "提示", {
+    confirmButtonText: "确认",
+  })
   return Promise.reject()
 }
 
 export const useDoc = () => {
   const store = useStore()
-  // 文档目录
-  const docDir = ref("")
   // 未提交记录（修改记录）
   const uncommitDoc = ref<string[]>([])
   // 当前选中的文章（eltree节点）
@@ -43,19 +42,14 @@ export const useDoc = () => {
   // 新增文档
   async function addDoc(node: Node, title: string) {
     // 创建文件夹
-    await createFolder(`${docDir.value}/docs/article`)
+    await createFolder(`${store.docFolder}/docs/article`)
     // 创建md文件
     const fileName = uuidv4()
-    const encoder = new TextEncoder()
-    const contents = encoder.encode(`# ${title}`)
     const path = `/article/${fileName}.md`
     try {
-      await writeBinaryFile({
-        path: `${docDir.value}/docs${path}`,
-        contents,
-      })
-    } catch {
-      return noPermission()
+      await writeMarkdownFile(`${store.docFolder}/docs${path}`, `# ${title}`)
+    } catch (error) {
+      return showErrorMessage(error)
     }
     // 修改菜单配置
     node.data.children.push({
@@ -86,11 +80,11 @@ export const useDoc = () => {
   }
   // 自定义异步获取图片函数，这里使用了 Promise 模拟异步操作
   async function asyncFileFetcher(src: string) {
-    let filePath = `${docDir.value}/docs/.vuepress/public${decodeURIComponent(
-      src,
-    )}`
+    let filePath = `${
+      store.docFolder
+    }/docs/.vuepress/public${decodeURIComponent(src)}`
     if (src.startsWith(".")) {
-      filePath = `${docDir.value}/docs${currentNode.value!.data.path.replace(
+      filePath = `${store.docFolder}/docs${currentNode.value!.data.path.replace(
         /\/[^/]+$/,
         "/",
       )}${decodeURIComponent(src)}`
@@ -145,7 +139,7 @@ export const useDoc = () => {
       // 删除后，先保存菜单设置
       await saveSidebar()
       // 再删除文件
-      await removeFile(`${docDir.value}/docs${currentNode.value.data.path}`)
+      await removeFile(`${store.docFolder}/docs${currentNode.value.data.path}`)
       currentDoc.value = ""
       currentNode.value = null
       loadDoc()
@@ -154,7 +148,7 @@ export const useDoc = () => {
   // 生成文档节点，并获取文章名字和变更记录
   async function getDocNode(node: string) {
     try {
-      const contents = await readTextFile(`${docDir.value}/docs${node}`)
+      const contents = await readTextFile(`${store.docFolder}/docs${node}`)
       return {
         id: node,
         text: getTitle(contents),
@@ -181,7 +175,7 @@ export const useDoc = () => {
     const result = (
       await new Command("run-git", [
         "-C",
-        docDir.value,
+        store.docFolder,
         "status",
         "-u",
         "-s",
@@ -199,7 +193,7 @@ export const useDoc = () => {
       return
     }
     currentNode.value = node
-    const contents = await readTextFile(`${docDir.value}/docs${data.path}`)
+    const contents = await readTextFile(`${store.docFolder}/docs${data.path}`)
     currentDoc.value = contents
       .replace(/&#123;&#123;/g, "{{")
       .replace(/&#125;&#125;/g, "{{")
@@ -207,10 +201,9 @@ export const useDoc = () => {
   async function handleImport() {
     const folderPath = await selectFolder()
     if (folderPath) {
-      docDir.value = folderPath
-      store.opened = true
-      if (!store.projectDirList.includes(folderPath)) {
-        store.projectDirList.push(folderPath)
+      store.docFolder = folderPath
+      if (!store.docDirHistory.includes(folderPath)) {
+        store.docDirHistory.push(folderPath)
       }
       await loadDoc()
       console.log(docList)
@@ -218,12 +211,16 @@ export const useDoc = () => {
   }
   // 获取已有文档列表（全量）
   async function loadDoc() {
-    if (!docDir.value) {
+    if (!store.docFolder) {
+      currentNode.value = null
+      docList.value = []
+      uncommitDoc.value = []
+      currentDoc.value = ""
       return
     }
     await getUncommitDoc()
     const arr = await readFileAsJson<AppSidebarItem[]>(
-      `${docDir.value}/docs/.vuepress/configs/sidebar/data.json`,
+      `${store.docFolder}/docs/.vuepress/configs/sidebar/data.json`,
     )
     for (let j = arr.length - 1; j >= 0; j--) {
       const node = arr[j]
@@ -277,36 +274,19 @@ export const useDoc = () => {
     if (!currentNode.value?.data.path) {
       return
     }
-    const encoder = new TextEncoder()
-    const data = encoder.encode(
-      currentDoc.value
-        .replace(/{{/g, "&#123;&#123;")
-        .replace(/}}/g, "&#125;&#125;"),
-    )
     try {
-      await writeBinaryFile({
-        path: `${docDir.value}/docs${currentNode.value?.data.path}`,
-        contents: data,
-      })
-    } catch {
-      return noPermission()
+      await writeMarkdownFile(
+        `${store.docFolder}/docs${currentNode.value?.data.path}`,
+        currentDoc.value
+          .replace(/{{/g, "&#123;&#123;")
+          .replace(/}}/g, "&#125;&#125;"),
+      )
+    } catch (error) {
+      return showErrorMessage(error)
     }
     ElMessage.success("保存成功")
-    // 暂存
-    await new Command("run-git", [
-      "-C",
-      docDir.value,
-      "add",
-      `docs${currentNode.value!.data.path}`,
-    ]).execute()
-    // 取消暂存 (有时文件一样也是处于修改状态中)
-    await new Command("run-git", [
-      "-C",
-      docDir.value,
-      "restore",
-      "--staged",
-      `docs${currentNode.value!.data.path}`,
-    ]).execute()
+    // git修改状态检查
+    await gitCheck(store.docFolder, `docs${currentNode.value!.data.path}`)
     // 保存文件把侧边栏顺便保存一下（比如缺了文件，侧边栏自我修复）
     await saveSidebar()
     // 刷新数据
@@ -325,32 +305,28 @@ export const useDoc = () => {
         children: resetChildren(JSON.parse(JSON.stringify(t.children))),
       }
     })
-    const encoder = new TextEncoder()
-    const data = encoder.encode(JSON.stringify(saveData, null, 2))
     try {
-      await writeBinaryFile({
-        path: `${docDir.value}/docs/.vuepress/configs/sidebar/data.json`,
-        contents: data,
-      })
-    } catch {
-      return noPermission()
+      await writeJsonFile(
+        `${store.docFolder}/docs/.vuepress/configs/sidebar/data.json`,
+        saveData,
+      )
+    } catch (error) {
+      return showErrorMessage(error)
     }
     await getUncommitDoc()
   }
   // 上传图片
   async function uploadImg(files: File[]) {
     // 创建文件夹
-    await createFolder(`${docDir.value}/docs/.vuepress/public/image`)
+    await createFolder(`${store.docFolder}/docs/.vuepress/public/image`)
     const output = [] as any
     for (let i = 0; i < files.length; i++) {
-      const file = files[i]
-      const buffer = await file.arrayBuffer()
-      const path = `/image/${uuidv4()}.${file.name.match(/\.([^./]+)$/)![1]}`
+      let path = ""
       try {
-        await writeBinaryFile({
-          path: `${docDir.value}/docs/.vuepress/public${path}`,
-          contents: new Uint8Array(buffer),
-        })
+        path = await writeImageFile(
+          files[i],
+          `${store.docFolder}/docs/.vuepress/public`,
+        )
       } catch {
         ElMessageBox.alert(
           "权限不足！开发平台建议装在D盘，如果装在C盘，请用管理员权限重新打开",
@@ -366,7 +342,6 @@ export const useDoc = () => {
     return output
   }
   return {
-    docDir,
     docList,
     currentDoc,
     currentNode,

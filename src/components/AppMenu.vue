@@ -86,10 +86,6 @@ import { useDialog } from "../lib/useDialog"
 import AppHistory from "../components/AppHistory.vue"
 import { runVSCode } from "../tauri/api"
 const props = defineProps({
-  docDir: {
-    type: String,
-    default: "",
-  },
   currentDoc: {
     type: String,
     default: "",
@@ -121,7 +117,7 @@ function menuSelect(index: string) {
   switch (index) {
     case "changes":
       show(AppHistory, {
-        docDir: props.docDir,
+        docDir: store.docFolder,
         currentDoc: props.currentDoc,
       }).then(() => {
         props.loadDoc()
@@ -134,11 +130,11 @@ function menuSelect(index: string) {
       props.deleteDoc()
       break
     case "close":
-      store.opened = false
+      store.docFolder = ""
       break
     case "vscode":
       console.log("runVSCode")
-      runVSCode(props.docDir)
+      runVSCode(store.docFolder)
       break
     case "newMenu":
       // 新增目录
