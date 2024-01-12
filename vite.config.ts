@@ -19,7 +19,10 @@ export default defineConfig(async () => ({
       resolvers: [ElementPlusResolver()],
     }),
   ],
-
+  define: {
+    // 定义全局变量显式关闭__VUE_OPTIONS_API__
+    __VUE_OPTIONS_API__: false,
+  },
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //
   // 1. prevent vite from obscuring rust errors

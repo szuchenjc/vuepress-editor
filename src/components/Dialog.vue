@@ -6,7 +6,7 @@ import zhCn from "element-plus/es/locale/lang/zh-cn.mjs"
 
 export default defineComponent({
   name: "ZlDialog",
-  setup(props, { expose }) {
+  setup(_props, { expose }) {
     let promise = null
     let _resolve: Function
     let _reject: Function
