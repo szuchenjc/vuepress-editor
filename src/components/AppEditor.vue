@@ -27,6 +27,10 @@ const props = defineProps({
     type: Function,
     default: null,
   },
+  saveMdFile: {
+    type: Function,
+    default: null,
+  },
 })
 // 配置md渲染自定义规则
 config({
@@ -35,12 +39,14 @@ config({
     md.use(asyncIframePlugin)
   },
 })
-// const content = ref("")
 async function onUploadImg(files: any, callback: any) {
   const images = await props.uploadImg(files)
   callback(images)
+  onSave()
 }
-function onSave() {}
+function onSave() {
+  props.saveMdFile()
+}
 // 图片插件函数
 function asyncImagePlugin(md: any) {
   md.renderer.rules.image = function (

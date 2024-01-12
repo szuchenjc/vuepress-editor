@@ -69,6 +69,7 @@ onMounted(() => {
             v-model="currentDoc"
             :asyncFileFetcher="asyncFileFetcher"
             :uploadImg="uploadImg"
+            :saveMdFile="saveMdFile"
           ></AppEditor>
         </el-main>
       </el-container>
