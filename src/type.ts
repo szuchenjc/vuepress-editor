@@ -7,3 +7,10 @@ export interface AppSidebarItem extends SidebarItem {
   collapsible?: boolean
   path?: string
 }
+
+export type gitChangesItem = {
+  file: string
+  type: string
+  path: string
+  status: string
+}

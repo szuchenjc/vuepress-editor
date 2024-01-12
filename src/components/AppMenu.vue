@@ -113,18 +113,18 @@ const props = defineProps({
 })
 const { show } = useDialog()
 const store = useStore()
-function menuSelect(index: string) {
+async function menuSelect(index: string) {
   switch (index) {
     case "changes":
       show(AppHistory, {
-        docDir: store.docFolder,
         currentDoc: props.currentDoc,
       }).then(() => {
+        // TODO：未修改记录会丢失，如果删除了当前文档怎么办
         props.loadDoc()
       })
       break
     case "save":
-      props.saveMdFile()
+      await props.saveMdFile(true)
       break
     case "delete":
       props.deleteDoc()

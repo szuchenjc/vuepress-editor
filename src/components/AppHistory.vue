@@ -56,20 +56,18 @@ import { Command } from "@tauri-apps/api/shell"
 import {
   readBinaryFile,
   readTextFile,
-  removeFile,
   writeBinaryFile,
 } from "@tauri-apps/api/fs"
 import { ElMessage, ElMessageBox } from "element-plus"
+import { useStore } from "../stores"
+import { undo } from "../tauri/api"
 
+const store = useStore()
 const ZlDialogRef = ref<InstanceType<typeof Dialog>>()
 const tableData = ref<any[]>([])
 const pushCount = ref(0)
 
 const props = defineProps({
-  docDir: {
-    type: String,
-    default: "",
-  },
   currentDoc: {
     type: String,
     default: "",
@@ -84,7 +82,7 @@ async function getData() {
   let changeList = (
     await new Command("run-git", [
       "-C",
-      props.docDir,
+      store.docFolder,
       "status",
       "-u",
       "-s",
@@ -105,7 +103,7 @@ async function getData() {
     if (row.path.endsWith(".md") && row.status !== "D") {
       let contents = ""
       try {
-        contents = await readTextFile(`${props.docDir}${row.path}`)
+        contents = await readTextFile(`${store.docFolder}/${row.path}`)
       } catch (error) {
         console.log(error)
       }
@@ -135,18 +133,7 @@ async function getData() {
 }
 
 async function reset(row: any) {
-  if (row.status === "??") {
-    // 未跟踪的文件直接删除
-    await removeFile(`${props.docDir}${row.path}`)
-  } else {
-    await new Command("run-git", [
-      "-C",
-      props.docDir,
-      "checkout",
-      "--",
-      row.path,
-    ]).execute()
-  }
+  await undo(row)
   await getData()
 }
 
@@ -162,11 +149,11 @@ const confirm = async () => {
   // ZlLoading.show()
   try {
     // 暂存修改
-    await new Command("run-git", ["-C", props.docDir, "add", "."]).execute()
+    await new Command("run-git", ["-C", store.docFolder, "add", "."]).execute()
     // 提交
     await new Command("run-git", [
       "-C",
-      props.docDir,
+      store.docFolder,
       "commit",
       "-a",
       "-m",
@@ -174,7 +161,7 @@ const confirm = async () => {
     ]).execute()
     const logMessage = await new Command("run-git", [
       "-C",
-      props.docDir,
+      store.docFolder,
       "log",
       "-n",
       "1",
@@ -183,7 +170,7 @@ const confirm = async () => {
     const hash = logMessage.stdout
     const pullMessage = await new Command("run-git", [
       "-C",
-      props.docDir,
+      store.docFolder,
       "pull",
     ]).execute()
     console.log(pullMessage)
@@ -193,7 +180,7 @@ const confirm = async () => {
       // 回退到提交节点
       await new Command("run-git", [
         "-C",
-        props.docDir,
+        store.docFolder,
         "reset",
         "--hard",
         hash,
@@ -201,7 +188,7 @@ const confirm = async () => {
       // 撤销最后一次提交
       await new Command("run-git", [
         "-C",
-        props.docDir,
+        store.docFolder,
         "reset",
         "HEAD^",
       ]).execute()
@@ -210,7 +197,7 @@ const confirm = async () => {
       const result = (
         await new Command("run-git", [
           "-C",
-          props.docDir,
+          store.docFolder,
           "status",
           "-u",
           "-s",
@@ -224,14 +211,14 @@ const confirm = async () => {
       for (let i = 0; i < conflictList.length; i++) {
         await new Command("run-git", [
           "-C",
-          props.docDir,
+          store.docFolder,
           "checkout",
           "--",
           conflictList[i],
         ]).execute()
       }
       // 重新获取最新，这个时候应该不冲突
-      await new Command("run-git", ["-C", props.docDir, "pull"]).execute()
+      await new Command("run-git", ["-C", store.docFolder, "pull"]).execute()
       // 获取新增md文件
       const mdList = result
         .filter((t: any) => t.split(" ").at(-1).endsWith(".md"))
@@ -239,7 +226,7 @@ const confirm = async () => {
       if (mdList.length > 0) {
         // 获取菜单，把md文件新增进去
         const data = await readBinaryFile(
-          `${props.docDir}/docs/.vuepress/configs/sidebar/data.json`,
+          `${store.docFolder}/docs/.vuepress/configs/sidebar/data.json`,
         )
         const decoder = new TextDecoder()
         const content = decoder.decode(data)
@@ -250,7 +237,7 @@ const confirm = async () => {
         const encoder = new TextEncoder()
         const data2 = encoder.encode(JSON.stringify(arr, null, 2))
         await writeBinaryFile({
-          path: `${props.docDir}/docs/.vuepress/configs/sidebar/data.json`,
+          path: `${store.docFolder}/docs/.vuepress/configs/sidebar/data.json`,
           contents: data2,
         })
         if (pushCount.value > 2) {
@@ -266,7 +253,7 @@ const confirm = async () => {
     } else {
       const pushMessage = await new Command("run-git", [
         "-C",
-        props.docDir,
+        store.docFolder,
         "push",
       ]).execute()
       console.log(pushMessage)

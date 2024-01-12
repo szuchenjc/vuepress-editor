@@ -40,7 +40,7 @@ export function getTitle(text: string) {
 
 export function showErrorMessage(error: unknown) {
   console.log(error)
-  ElMessageBox.alert((error as Error)?.message, "提示", {
+  ElMessageBox.alert((error as Error)?.message || (error as string), "提示", {
     confirmButtonText: "确认",
   })
   return Promise.reject()

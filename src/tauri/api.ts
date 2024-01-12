@@ -4,6 +4,7 @@ import {
   createDir,
   exists,
   readBinaryFile,
+  removeFile,
   writeBinaryFile,
 } from "@tauri-apps/api/fs"
 import { appConfigDir } from "@tauri-apps/api/path"
@@ -11,6 +12,7 @@ import { v4 as uuidv4 } from "uuid"
 import { useStore } from "../stores"
 import { showErrorMessage } from "../lib/docUtils"
 import { ElMessageBox } from "element-plus"
+import { gitChangesItem } from "../type"
 
 // 运行vscode
 export async function runVSCode(path: string) {
@@ -140,4 +142,26 @@ export async function gitCheck(docDirPath: string, filePath: string) {
     "--staged",
     filePath,
   ]).execute()
+}
+
+// 撤销修改
+export async function undo(row: gitChangesItem) {
+  const store = useStore()
+  try {
+    if (row.status === "??") {
+      // 未跟踪的文件直接删除
+      await removeFile(`${store.docFolder}/${row.path}`)
+    } else {
+      await new Command("run-git", [
+        "-C",
+        store.docFolder,
+        "checkout",
+        "--",
+        row.path,
+      ]).execute()
+    }
+  } catch (error) {
+    showErrorMessage(error)
+    throw new Error()
+  }
 }

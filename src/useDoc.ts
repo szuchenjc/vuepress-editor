@@ -195,11 +195,11 @@ export const useDoc = () => {
         store.docDirHistory.push(folderPath)
       }
       await loadDoc()
-      console.log(docList)
     }
   }
   // 获取已有文档列表（全量）
   async function loadDoc() {
+    console.log("loadDoc")
     if (!store.docFolder) {
       currentNode.value = null
       docList.value = []
@@ -221,7 +221,6 @@ export const useDoc = () => {
         }
       } else {
         node.id = node.text
-        console.log(node.children)
         await setChildren(node.children)
       }
     }
@@ -231,7 +230,6 @@ export const useDoc = () => {
       nextTick(() => {
         // currentNode.value = treeRef.value!.getNode(currentNode.value!.data.path)
         bus.emit("getCurrentNode", currentNode.value!.data.path)
-        console.log("重新点击了")
         handleDocClick(currentNode.value!.data, currentNode.value!)
       })
     }
@@ -245,7 +243,6 @@ export const useDoc = () => {
       {
         const child = children[i]
         if (typeof child === "string") {
-          console.log(child)
           children[i] = await getDocNode(child)
           if (children[i].deleted) {
             // 文件不存在，删除菜单配置
@@ -259,7 +256,7 @@ export const useDoc = () => {
     }
   }
   // 保存文档(物理)
-  async function saveMdFile() {
+  async function saveMdFile(showSuccessMessage: boolean = false) {
     if (!currentNode.value?.data.path) {
       return
     }
@@ -269,7 +266,9 @@ export const useDoc = () => {
         .replace(/{{/g, "&#123;&#123;")
         .replace(/}}/g, "&#125;&#125;"),
     )
-    ElMessage.success("保存成功")
+    if (showSuccessMessage) {
+      ElMessage.success("保存成功")
+    }
     // git修改状态检查
     await gitCheck(store.docFolder, `docs${currentNode.value!.data.path}`)
     // 保存文件把侧边栏顺便保存一下（比如缺了文件，侧边栏自我修复）
