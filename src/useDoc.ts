@@ -194,7 +194,6 @@ export const useDoc = () => {
       if (!store.docDirHistory.includes(folderPath)) {
         store.docDirHistory.push(folderPath)
       }
-      await loadDoc()
     }
   }
   // 获取已有文档列表（全量）
@@ -315,6 +314,8 @@ export const useDoc = () => {
         uncommitDoc.value = []
         currentDoc.value = ""
         return
+      } else {
+        loadDoc()
       }
     },
   )

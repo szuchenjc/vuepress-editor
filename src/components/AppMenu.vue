@@ -5,11 +5,20 @@
     active-text-color="#303133"
     @select="menuSelect"
   >
-    <el-menu-item index="close">
-      <el-icon class="text-[#2c3e50]"><HomeFilled /></el-icon>
-      <template #title>主页</template>
-    </el-menu-item>
-    <el-sub-menu index="home" :disabled="!store.docFolder">
+    <el-sub-menu index="home">
+      <template #title>
+        <el-icon class="text-[#2c3e50]"><HomeFilled /></el-icon>
+      </template>
+      <el-menu-item index="close">主页</el-menu-item>
+      <el-menu-item
+        v-for="item in store.docDirHistory"
+        :key="item"
+        :index="item"
+      >
+        {{ item }}
+      </el-menu-item>
+    </el-sub-menu>
+    <el-sub-menu index="action" :disabled="!store.docFolder">
       <template #title>
         <el-icon class="text-[#2c3e50]"><icon-menu /></el-icon>
       </template>
@@ -70,14 +79,7 @@
 </template>
 
 <script lang="ts" setup>
-import {
-  // Document,
-  Menu as IconMenu,
-  // Location,
-  // Setting,
-  // CloseBold,
-  HomeFilled,
-} from "@element-plus/icons-vue"
+import { Menu as IconMenu, HomeFilled } from "@element-plus/icons-vue"
 import { useStore } from "../stores/index"
 import { ElMessageBox } from "element-plus"
 import bus from "../lib/bus"
@@ -148,6 +150,9 @@ async function menuSelect(index: string) {
       })
       break
     default:
+      if (store.docDirHistory.includes(index)) {
+        store.docFolder = index
+      }
       break
   }
 }
