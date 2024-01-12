@@ -46,8 +46,6 @@ onMounted(() => {
         :currentDoc="currentDoc"
         :uncommitDoc="uncommitDoc"
         :addMenu="addMenu"
-        :deleteDoc="deleteDoc"
-        :saveMdFile="saveMdFile"
         :loadDoc="loadDoc"
       ></AppMenu>
     </el-aside>
@@ -70,6 +68,7 @@ onMounted(() => {
             :asyncFileFetcher="asyncFileFetcher"
             :uploadImg="uploadImg"
             :saveMdFile="saveMdFile"
+            :deleteDoc="deleteDoc"
           ></AppEditor>
         </el-main>
       </el-container>

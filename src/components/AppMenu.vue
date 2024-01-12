@@ -9,7 +9,7 @@
       <el-icon class="text-[#2c3e50]"><HomeFilled /></el-icon>
       <template #title>主页</template>
     </el-menu-item>
-    <el-sub-menu index="home">
+    <el-sub-menu index="home" :disabled="!store.docFolder">
       <template #title>
         <el-icon class="text-[#2c3e50]"><icon-menu /></el-icon>
       </template>
@@ -28,13 +28,13 @@
         <el-menu-item index="1-4-1">item one</el-menu-item>
       </el-sub-menu> -->
     </el-sub-menu>
-    <el-menu-item index="save">
+    <!-- <el-menu-item index="save">
       <i
         class="iconfont icon-save-fill text-[20px] text-[#1296db] ml-[2px]"
       ></i>
       <template #title>保存当前文档</template>
-    </el-menu-item>
-    <el-menu-item index="changes">
+    </el-menu-item> -->
+    <el-menu-item index="changes" :disabled="!store.docFolder">
       <el-badge
         v-if="uncommitDoc.length"
         :value="uncommitDoc.length"
@@ -53,14 +53,14 @@
       <el-icon><document /></el-icon>
       <template #title>Navigator Three</template>
     </el-menu-item> -->
-    <el-menu-item index="vscode">
+    <el-menu-item index="vscode" :disabled="!store.docFolder">
       <i class="iconfont icon-vscode text-[20px] text-[#1296db] ml-[2px]"></i>
       <template #title>vscode打开项目</template>
     </el-menu-item>
-    <el-menu-item index="delete">
+    <!-- <el-menu-item index="delete">
       <el-icon class="text-[#f89898]"><DeleteFilled /></el-icon>
       <template #title>删除当前文档</template>
-    </el-menu-item>
+    </el-menu-item> -->
 
     <!-- <el-menu-item index="webstorm">
       <i class="iconfont icon-webstorm text-[18px] text-[#1296db] ml-[2px]"></i>
@@ -76,7 +76,6 @@ import {
   // Location,
   // Setting,
   // CloseBold,
-  DeleteFilled,
   HomeFilled,
 } from "@element-plus/icons-vue"
 import { useStore } from "../stores/index"
@@ -102,14 +101,14 @@ const props = defineProps({
     type: Function,
     default: null,
   },
-  deleteDoc: {
-    type: Function,
-    default: null,
-  },
-  saveMdFile: {
-    type: Function,
-    default: null,
-  },
+  // deleteDoc: {
+  //   type: Function,
+  //   default: null,
+  // },
+  // saveMdFile: {
+  //   type: Function,
+  //   default: null,
+  // },
 })
 const { show } = useDialog()
 const store = useStore()
@@ -123,12 +122,12 @@ async function menuSelect(index: string) {
         props.loadDoc()
       })
       break
-    case "save":
-      await props.saveMdFile(true)
-      break
-    case "delete":
-      props.deleteDoc()
-      break
+    // case "save":
+    //   await props.saveMdFile(true)
+    //   break
+    // case "delete":
+    //   props.deleteDoc()
+    //   break
     case "close":
       store.docFolder = ""
       break

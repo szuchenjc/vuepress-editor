@@ -1,5 +1,5 @@
 import { readTextFile, removeFile } from "@tauri-apps/api/fs"
-import { nextTick, ref } from "vue"
+import { nextTick, ref, watch } from "vue"
 import { TreeNodeData } from "element-plus/lib/components/tree/src/tree.type"
 import { ElMessage, ElMessageBox } from "element-plus"
 import { v4 as uuidv4 } from "uuid"
@@ -201,10 +201,6 @@ export const useDoc = () => {
   async function loadDoc() {
     console.log("loadDoc")
     if (!store.docFolder) {
-      currentNode.value = null
-      docList.value = []
-      uncommitDoc.value = []
-      currentDoc.value = ""
       return
     }
     await getUncommitDoc()
@@ -310,6 +306,18 @@ export const useDoc = () => {
     getUncommitDoc()
     return output
   }
+  watch(
+    () => store.docFolder,
+    (newValue) => {
+      if (!newValue) {
+        currentNode.value = null
+        docList.value = []
+        uncommitDoc.value = []
+        currentDoc.value = ""
+        return
+      }
+    },
+  )
   return {
     docList,
     currentDoc,

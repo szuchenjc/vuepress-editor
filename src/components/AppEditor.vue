@@ -1,5 +1,6 @@
 <template>
   <md-editor
+    :toolbars="toolbarsConfig"
     editorId="editor"
     :disabled="false"
     :modelValue="content"
@@ -8,11 +9,23 @@
     @onSave="onSave"
     :noUploadImg="false"
     class="w-full h-full"
-  />
+  >
+    <template #defToolbars>
+      <NormalToolbar title="mark" @onClick="handleDelete">
+        <template #trigger>
+          <el-icon class="text-[#f89898] h-[24px] w-[24px]">
+            <DeleteFilled />
+          </el-icon>
+        </template>
+      </NormalToolbar>
+    </template>
+  </md-editor>
 </template>
 
 <script lang="ts" setup>
-import { MdEditor, config } from "md-editor-v3"
+import { MdEditor, config, NormalToolbar } from "md-editor-v3"
+import { DeleteFilled } from "@element-plus/icons-vue"
+import toolbarsConfig from "../lib/toolbars"
 import "md-editor-v3/lib/style.css"
 const props = defineProps({
   content: {
@@ -31,6 +44,10 @@ const props = defineProps({
     type: Function,
     default: null,
   },
+  deleteDoc: {
+    type: Function,
+    default: null,
+  },
 })
 // 配置md渲染自定义规则
 config({
@@ -45,7 +62,7 @@ async function onUploadImg(files: any, callback: any) {
   onSave()
 }
 function onSave() {
-  props.saveMdFile()
+  props.saveMdFile(true)
 }
 // 图片插件函数
 function asyncImagePlugin(md: any) {
@@ -92,6 +109,9 @@ function asyncIframePlugin(md: any) {
     }
     return fn(tokens, idx, options, env, self)
   }
+}
+function handleDelete() {
+  props.deleteDoc()
 }
 </script>
 
