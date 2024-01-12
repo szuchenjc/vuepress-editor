@@ -6,12 +6,16 @@
     :modelValue="content"
     @update:modelValue="$emit('update:modelValue')"
     @onUploadImg="onUploadImg"
-    @onSave="onSave"
     :noUploadImg="false"
     class="w-full h-full"
   >
     <template #defToolbars>
-      <NormalToolbar title="mark" @onClick="handleDelete">
+      <NormalToolbar title="保存" @onClick="onSave">
+        <template #trigger>
+          <i class="iconfont icon-save-fill text-[17px] text-[#1296db]"></i>
+        </template>
+      </NormalToolbar>
+      <NormalToolbar title="删除" @onClick="handleDelete">
         <template #trigger>
           <el-icon class="text-[#f89898] h-[24px] w-[24px]">
             <DeleteFilled />
