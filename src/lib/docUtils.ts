@@ -1,3 +1,4 @@
+import { ElMessageBox } from "element-plus"
 import { AppSidebarItem } from "../type"
 
 interface AppSidebarItemOut extends Omit<AppSidebarItem, "children"> {
@@ -35,4 +36,12 @@ export function resetChildren(
 export function getTitle(text: string) {
   const match = text.match(/^#\s*(.*?)\s*$/m)
   return match ? match[1] : "未知标题"
+}
+
+export function showErrorMessage(error: unknown) {
+  console.log(error)
+  ElMessageBox.alert((error as Error)?.message, "提示", {
+    confirmButtonText: "确认",
+  })
+  return Promise.reject()
 }

@@ -1,5 +1,4 @@
 import { readTextFile, removeFile } from "@tauri-apps/api/fs"
-import bus from "./lib/bus"
 import { nextTick, ref } from "vue"
 import { TreeNodeData } from "element-plus/lib/components/tree/src/tree.type"
 import { ElMessage, ElMessageBox } from "element-plus"
@@ -7,7 +6,9 @@ import { v4 as uuidv4 } from "uuid"
 import { Command } from "@tauri-apps/api/shell"
 import { getTitle, resetChildren } from "./lib/docUtils"
 import { AppSidebarItem } from "./type"
+import { useStore } from "./stores"
 import type Node from "element-plus/es/components/tree/src/model/node"
+import bus from "./lib/bus"
 import {
   convertFileToDataUri,
   createFolder,
@@ -19,15 +20,6 @@ import {
   writeJsonFile,
   writeMarkdownFile,
 } from "./tauri/api"
-import { useStore } from "./stores"
-
-function showErrorMessage(error: unknown) {
-  console.log(error)
-  ElMessageBox.alert((error as Error)?.message, "提示", {
-    confirmButtonText: "确认",
-  })
-  return Promise.reject()
-}
 
 export const useDoc = () => {
   const store = useStore()
@@ -46,11 +38,8 @@ export const useDoc = () => {
     // 创建md文件
     const fileName = uuidv4()
     const path = `/article/${fileName}.md`
-    try {
-      await writeMarkdownFile(`${store.docFolder}/docs${path}`, `# ${title}`)
-    } catch (error) {
-      return showErrorMessage(error)
-    }
+    // 物理保存
+    await writeMarkdownFile(`${store.docFolder}/docs${path}`, `# ${title}`)
     // 修改菜单配置
     node.data.children.push({
       id: path,
@@ -274,16 +263,12 @@ export const useDoc = () => {
     if (!currentNode.value?.data.path) {
       return
     }
-    try {
-      await writeMarkdownFile(
-        `${store.docFolder}/docs${currentNode.value?.data.path}`,
-        currentDoc.value
-          .replace(/{{/g, "&#123;&#123;")
-          .replace(/}}/g, "&#125;&#125;"),
-      )
-    } catch (error) {
-      return showErrorMessage(error)
-    }
+    await writeMarkdownFile(
+      `${store.docFolder}/docs${currentNode.value?.data.path}`,
+      currentDoc.value
+        .replace(/{{/g, "&#123;&#123;")
+        .replace(/}}/g, "&#125;&#125;"),
+    )
     ElMessage.success("保存成功")
     // git修改状态检查
     await gitCheck(store.docFolder, `docs${currentNode.value!.data.path}`)
@@ -305,14 +290,10 @@ export const useDoc = () => {
         children: resetChildren(JSON.parse(JSON.stringify(t.children))),
       }
     })
-    try {
-      await writeJsonFile(
-        `${store.docFolder}/docs/.vuepress/configs/sidebar/data.json`,
-        saveData,
-      )
-    } catch (error) {
-      return showErrorMessage(error)
-    }
+    await writeJsonFile(
+      `${store.docFolder}/docs/.vuepress/configs/sidebar/data.json`,
+      saveData,
+    )
     await getUncommitDoc()
   }
   // 上传图片
@@ -321,24 +302,13 @@ export const useDoc = () => {
     await createFolder(`${store.docFolder}/docs/.vuepress/public/image`)
     const output = [] as any
     for (let i = 0; i < files.length; i++) {
-      let path = ""
-      try {
-        path = await writeImageFile(
-          files[i],
-          `${store.docFolder}/docs/.vuepress/public`,
-        )
-      } catch {
-        ElMessageBox.alert(
-          "权限不足！开发平台建议装在D盘，如果装在C盘，请用管理员权限重新打开",
-          "提示",
-          {
-            confirmButtonText: "确认",
-          },
-        )
-        return []
-      }
+      const path = await writeImageFile(
+        files[i],
+        `${store.docFolder}/docs/.vuepress/public`,
+      )
       output.push(path)
     }
+    getUncommitDoc()
     return output
   }
   return {

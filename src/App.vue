@@ -5,6 +5,8 @@ import AppAside from "./components/AppAside.vue"
 import AppEditor from "./components/AppEditor.vue"
 import { useStore } from "./stores/index"
 import { useDoc } from "./useDoc"
+import { onKeyStroke } from "@vueuse/core"
+import { onMounted } from "vue"
 const store = useStore()
 const {
   docList,
@@ -23,7 +25,18 @@ const {
   saveSidebar,
   uploadImg,
 } = useDoc()
-loadDoc()
+
+onMounted(() => {
+  // 加载文档
+  loadDoc()
+  // 监听ctrl+s
+  onKeyStroke("s", (event: KeyboardEvent) => {
+    if (event.ctrlKey) {
+      event.preventDefault() // 阻止默认行为
+      saveMdFile() // 执行保存操作
+    }
+  })
+})
 </script>
 
 <template>

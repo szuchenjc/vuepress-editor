@@ -9,6 +9,8 @@ import {
 import { appConfigDir } from "@tauri-apps/api/path"
 import { v4 as uuidv4 } from "uuid"
 import { useStore } from "../stores"
+import { showErrorMessage } from "../lib/docUtils"
+import { ElMessageBox } from "element-plus"
 
 // 运行vscode
 export async function runVSCode(path: string) {
@@ -77,31 +79,53 @@ export async function selectFolder() {
 export async function writeMarkdownFile(filePath: string, contents: string) {
   const encoder = new TextEncoder()
   const encodedContent = encoder.encode(contents)
-  await writeBinaryFile({
-    path: filePath,
-    contents: encodedContent,
-  })
+  try {
+    await writeBinaryFile({
+      path: filePath,
+      contents: encodedContent,
+    })
+  } catch (error) {
+    showErrorMessage(error)
+    throw new Error()
+  }
 }
 
 // 保存MD文件
 export async function writeJsonFile<T>(filePath: string, contents: T) {
   const encoder = new TextEncoder()
   const data = encoder.encode(JSON.stringify(contents, null, 2))
-  await writeBinaryFile({
-    path: filePath,
-    contents: data,
-  })
+  try {
+    await writeBinaryFile({
+      path: filePath,
+      contents: data,
+    })
+  } catch (error) {
+    showErrorMessage(error)
+    throw new Error()
+  }
 }
 
 // 保存图片
 export async function writeImageFile(file: File, imageFolderPath: string) {
   const buffer = await file.arrayBuffer()
   const path = `/image/${uuidv4()}.${file.name.match(/\.([^./]+)$/)![1]}`
-  await writeBinaryFile({
-    path: imageFolderPath + path,
-    contents: new Uint8Array(buffer),
-  })
-  return path
+  try {
+    await writeBinaryFile({
+      path: imageFolderPath + path,
+      contents: new Uint8Array(buffer),
+    })
+    return path
+  } catch (error) {
+    console.log(error)
+    ElMessageBox.alert(
+      "权限不足！开发平台建议装在D盘，如果装在C盘，请用管理员权限重新打开",
+      "提示",
+      {
+        confirmButtonText: "确认",
+      },
+    )
+    return []
+  }
 }
 
 // git修改记录检查
