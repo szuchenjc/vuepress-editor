@@ -3,7 +3,6 @@ import { nextTick, ref, watch } from "vue"
 import { TreeNodeData } from "element-plus/lib/components/tree/src/tree.type"
 import { ElMessage, ElMessageBox } from "element-plus"
 import { v4 as uuidv4 } from "uuid"
-import { Command } from "@tauri-apps/api/shell"
 import { getTitle, resetChildren } from "./lib/docUtils"
 import { AppSidebarItem } from "./type"
 import { useStore } from "./stores"
@@ -12,6 +11,7 @@ import bus from "./lib/bus"
 import {
   convertFileToDataUri,
   createFolder,
+  getUncommitList,
   gitCheck,
   readFileAsJson,
   runVSCode,
@@ -23,8 +23,6 @@ import {
 
 export const useDoc = () => {
   const store = useStore()
-  // 未提交记录（修改记录）
-  const uncommitDoc = ref<string[]>([])
   // 当前选中的文章（eltree节点）
   const currentNode = ref<Node | null>(null)
   // 所有文章（eltree数据源）
@@ -144,7 +142,7 @@ export const useDoc = () => {
         path: node,
         leaf: true,
         deleted: false,
-        unCommit: uncommitDoc.value.some((t) => `docs${node}`.indexOf(t) > -1),
+        unCommit: store.uncommitList.some((t) => `docs${node}`.indexOf(t) > -1),
       }
     } catch {
       return {
@@ -157,25 +155,25 @@ export const useDoc = () => {
       }
     }
   }
-  // 获取未提交的修改
-  async function getUncommitDoc() {
-    // const loading = ElLoading.service()
-    // 获取所有未上传的变更记录
-    const result = (
-      await new Command("run-git", [
-        "-C",
-        store.docFolder,
-        "status",
-        "-u",
-        "-s",
-      ]).execute()
-    ).stdout
-      .split("\n")
-      .filter((t: string) => t)
-      .map((t: string) => t.split(" ").at(-1)!)
-    // loading.close()
-    uncommitDoc.value = result.filter((t: string) => !t?.startsWith("."))
-  }
+  // // 获取未提交的修改
+  // async function getUncommitList() {
+  //   // const loading = ElLoading.service()
+  //   // 获取所有未上传的变更记录
+  //   const result = (
+  //     await new Command("run-git", [
+  //       "-C",
+  //       store.docFolder,
+  //       "status",
+  //       "-u",
+  //       "-s",
+  //     ]).execute()
+  //   ).stdout
+  //     .split("\n")
+  //     .filter((t: string) => t)
+  //     .map((t: string) => t.split(" ").at(-1)!)
+  //   // loading.close()
+  //   store.uncommitList = result.filter((t: string) => !t?.startsWith("."))
+  // }
   // 点击文档，进行加载
   async function handleDocClick(data: TreeNodeData, node: Node) {
     if (!data.path) {
@@ -202,7 +200,7 @@ export const useDoc = () => {
     if (!store.docFolder) {
       return
     }
-    await getUncommitDoc()
+    await getUncommitList()
     const arr = await readFileAsJson<AppSidebarItem[]>(
       `${store.docFolder}/docs/.vuepress/configs/sidebar/data.json`,
     )
@@ -288,7 +286,7 @@ export const useDoc = () => {
       `${store.docFolder}/docs/.vuepress/configs/sidebar/data.json`,
       saveData,
     )
-    await getUncommitDoc()
+    await getUncommitList()
   }
   // 上传图片
   async function uploadImg(files: File[]) {
@@ -302,7 +300,7 @@ export const useDoc = () => {
       )
       output.push(path)
     }
-    getUncommitDoc()
+    getUncommitList()
     return output
   }
   watch(
@@ -311,7 +309,7 @@ export const useDoc = () => {
       if (!newValue) {
         currentNode.value = null
         docList.value = []
-        uncommitDoc.value = []
+        store.uncommitList = []
         currentDoc.value = ""
         return
       } else {
@@ -323,7 +321,6 @@ export const useDoc = () => {
     docList,
     currentDoc,
     currentNode,
-    uncommitDoc,
     saveSidebar,
     runVSCode,
     addDoc,

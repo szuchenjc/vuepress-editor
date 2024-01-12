@@ -45,8 +45,8 @@
     </el-menu-item> -->
     <el-menu-item index="changes" :disabled="!store.docFolder">
       <el-badge
-        v-if="uncommitDoc.length"
-        :value="uncommitDoc.length"
+        v-if="store.uncommitList.length"
+        :value="store.uncommitList.length"
         type="primary"
         class="changes"
       >
@@ -90,10 +90,6 @@ const props = defineProps({
   currentDoc: {
     type: String,
     default: "",
-  },
-  uncommitDoc: {
-    type: Array as () => string[],
-    default: () => [],
   },
   addMenu: {
     type: Function,

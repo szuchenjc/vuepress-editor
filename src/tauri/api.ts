@@ -165,3 +165,22 @@ export async function undo(row: gitChangesItem) {
     throw new Error()
   }
 }
+
+// 获取未提交的修改
+export async function getUncommitList() {
+  const store = useStore()
+  // 获取所有未上传的变更记录
+  const result = (
+    await new Command("run-git", [
+      "-C",
+      store.docFolder,
+      "status",
+      "-u",
+      "-s",
+    ]).execute()
+  ).stdout
+    .split("\n")
+    .filter((t: string) => t)
+    .map((t: string) => t.split(" ").at(-1)!)
+  store.uncommitList = result.filter((t: string) => !t?.startsWith("."))
+}

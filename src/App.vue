@@ -12,7 +12,6 @@ const {
   docList,
   currentDoc,
   currentNode,
-  uncommitDoc,
   addDoc,
   addMenu,
   asyncFileFetcher,
@@ -44,7 +43,6 @@ onMounted(() => {
     <el-aside width="64px">
       <AppMenu
         :currentDoc="currentDoc"
-        :uncommitDoc="uncommitDoc"
         :addMenu="addMenu"
         :loadDoc="loadDoc"
       ></AppMenu>

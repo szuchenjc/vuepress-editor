@@ -9,6 +9,7 @@ export const useStore = defineStore("main", {
       previousFolder: "", // 上一次选择的文件夹
       docFolder: "", // 当前文件夹
       docDirHistory: [] as string[],
+      uncommitList: [] as string[],
     }
   },
   persist: true,
