@@ -5,8 +5,7 @@ import AutoImport from "unplugin-auto-import/vite"
 import Components from "unplugin-vue-components/vite"
 import { ElementPlusResolver } from "unplugin-vue-components/resolvers"
 
-// https://vitejs.dev/config/
-export default defineConfig(async () => ({
+const baseConfig = {
   plugins: [
     vue(),
     eslintPlugin({
@@ -36,4 +35,8 @@ export default defineConfig(async () => ({
       ignored: ["**/src-tauri/**"],
     },
   },
-}))
+}
+// https://vitejs.dev/config/
+export default defineConfig(baseConfig)
+
+export { baseConfig }
