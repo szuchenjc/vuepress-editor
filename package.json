@@ -3,12 +3,14 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "main": "./src-electron/out/main/index.js",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "electron": "electron-vite --config ./src-electron/electron.vite.config.ts --entry ./src-electron/out/main/index.js"
+    "electron": "electron-vite --config ./src-electron/electron.vite.config.ts --entry ./src-electron/out/main/index.js",
+    "electron-build": "npm run electron build && electron-builder --win --x64 --config ./src-electron/electron-builder.json"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",
@@ -35,6 +37,7 @@
     "@vue/eslint-config-typescript": "^12.0.0",
     "autoprefixer": "^10.4.16",
     "electron": "^28.1.3",
+    "electron-builder": "^24.9.1",
     "electron-vite": "^2.0.0",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
