@@ -52,15 +52,16 @@
 <script lang="ts" setup>
 import { ref } from "vue"
 import Dialog from "../components/Dialog.vue"
-import { Command } from "@tauri-apps/api/shell"
-import {
-  readBinaryFile,
-  readTextFile,
-  writeBinaryFile,
-} from "@tauri-apps/api/fs"
 import { ElMessage, ElMessageBox } from "element-plus"
 import { useStore } from "../stores"
-import { undo } from "../tauri/api"
+import {
+  readFileAsJson,
+  readTextFile,
+  runGitCommand,
+  undo,
+  writeJsonFile,
+} from "../tauri/api"
+import { AppSidebarItem } from "../type"
 
 const store = useStore()
 const ZlDialogRef = ref<InstanceType<typeof Dialog>>()
@@ -79,15 +80,7 @@ const props = defineProps({
 })
 
 async function getData() {
-  let changeList = (
-    await new Command("run-git", [
-      "-C",
-      store.docFolder,
-      "status",
-      "-u",
-      "-s",
-    ]).execute()
-  ).stdout
+  let changeList = (await runGitCommand(["status", "-u", "-s"])).stdout
     .split("\n")
     .filter((t) => t)
     .map((t) => ({
@@ -149,97 +142,51 @@ const confirm = async () => {
   // ZlLoading.show()
   try {
     // 暂存修改
-    await new Command("run-git", ["-C", store.docFolder, "add", "."]).execute()
+    await runGitCommand(["add", "."])
     // 提交
-    await new Command("run-git", [
-      "-C",
-      store.docFolder,
-      "commit",
-      "-a",
-      "-m",
-      "文档编辑",
-    ]).execute()
-    const logMessage = await new Command("run-git", [
-      "-C",
-      store.docFolder,
-      "log",
-      "-n",
-      "1",
-      "--format=%H",
-    ]).execute()
+    await runGitCommand(["commit", "-a", "-m", "文档编辑"])
+    const logMessage = await runGitCommand(["log", "-n", "1", "--format=%H"])
     const hash = logMessage.stdout
-    const pullMessage = await new Command("run-git", [
-      "-C",
-      store.docFolder,
-      "pull",
-    ]).execute()
+    const pullMessage = await runGitCommand(["pull"])
     console.log(pullMessage)
     console.log("合并失败,即将回退")
     if (pullMessage.stdout.indexOf("merge failed") > -1) {
       ElMessage.warning(`修改和线上版本部分文件冲突，部分修改将自动撤销！`)
       // 回退到提交节点
-      await new Command("run-git", [
-        "-C",
-        store.docFolder,
-        "reset",
-        "--hard",
-        hash,
-      ]).execute()
+      await runGitCommand(["reset", "--hard", hash])
       // 撤销最后一次提交
-      await new Command("run-git", [
-        "-C",
-        store.docFolder,
-        "reset",
-        "HEAD^",
-      ]).execute()
+      await runGitCommand(["reset", "HEAD^"])
       // 获取所有非新增的修改，需要进行撤销（可以优化仅冲突的）
       // 获取所有未上传的变更记录
-      const result = (
-        await new Command("run-git", [
-          "-C",
-          store.docFolder,
-          "status",
-          "-u",
-          "-s",
-        ]).execute()
-      ).stdout
+      const result = (await runGitCommand(["status", "-u", "-s"])).stdout
         .split("\n")
         .filter((t) => t)
       const conflictList = result
         .filter((t: any) => t.split(" ").at(-2) !== "??")
         .map((t: any) => t.split(" ").at(-1)) as any[]
       for (let i = 0; i < conflictList.length; i++) {
-        await new Command("run-git", [
-          "-C",
-          store.docFolder,
-          "checkout",
-          "--",
-          conflictList[i],
-        ]).execute()
+        await runGitCommand(["checkout", "--", conflictList[i]])
       }
       // 重新获取最新，这个时候应该不冲突
-      await new Command("run-git", ["-C", store.docFolder, "pull"]).execute()
+      await runGitCommand(["pull"])
       // 获取新增md文件
       const mdList = result
         .filter((t: any) => t.split(" ").at(-1).endsWith(".md"))
         .map((t: any) => t.split(" ").at(-1)) as any[]
       if (mdList.length > 0) {
         // 获取菜单，把md文件新增进去
-        const data = await readBinaryFile(
+        let arr = await readFileAsJson<AppSidebarItem[]>(
           `${store.docFolder}/docs/.vuepress/configs/sidebar/data.json`,
         )
-        const decoder = new TextDecoder()
-        const content = decoder.decode(data)
-        let arr = JSON.parse(content)
         mdList.forEach((t) => {
           arr.push(t.replace(/^docs\//, "/"))
         })
         const encoder = new TextEncoder()
         const data2 = encoder.encode(JSON.stringify(arr, null, 2))
-        await writeBinaryFile({
-          path: `${store.docFolder}/docs/.vuepress/configs/sidebar/data.json`,
-          contents: data2,
-        })
+        await writeJsonFile(
+          `${store.docFolder}/docs/.vuepress/configs/sidebar/data.json`,
+          data2,
+        )
         if (pushCount.value > 2) {
           // ZlLoading.close()
           return ElMessage.error(
@@ -251,11 +198,7 @@ const confirm = async () => {
         confirm()
       }
     } else {
-      const pushMessage = await new Command("run-git", [
-        "-C",
-        store.docFolder,
-        "push",
-      ]).execute()
+      const pushMessage = await runGitCommand(["push"])
       console.log(pushMessage)
       if (
         pushMessage.stderr.indexOf(

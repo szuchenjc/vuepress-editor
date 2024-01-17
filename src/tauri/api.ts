@@ -4,6 +4,7 @@ import {
   createDir,
   exists,
   readBinaryFile,
+  readTextFile,
   removeFile,
   writeBinaryFile,
 } from "@tauri-apps/api/fs"
@@ -92,7 +93,7 @@ export async function writeMarkdownFile(filePath: string, contents: string) {
   }
 }
 
-// 保存MD文件
+// 保存JSON文件
 export async function writeJsonFile<T>(filePath: string, contents: T) {
   const encoder = new TextEncoder()
   const data = encoder.encode(JSON.stringify(contents, null, 2))
@@ -184,3 +185,15 @@ export async function getUncommitList() {
     .map((t: string) => t.split(" ").at(-1)!)
   store.uncommitList = result.filter((t: string) => !t?.startsWith("."))
 }
+
+// 获取未提交的修改
+export async function runGitCommand(options: string[]) {
+  const store = useStore()
+  return await new Command("run-git", [
+    "-C",
+    store.docFolder,
+    ...options,
+  ]).execute()
+}
+
+export { readTextFile, removeFile }

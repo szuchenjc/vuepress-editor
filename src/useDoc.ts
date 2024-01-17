@@ -1,4 +1,3 @@
-import { readTextFile, removeFile } from "@tauri-apps/api/fs"
 import { nextTick, ref, watch } from "vue"
 import { TreeNodeData } from "element-plus/lib/components/tree/src/tree.type"
 import { ElMessage, ElMessageBox } from "element-plus"
@@ -14,6 +13,8 @@ import {
   getUncommitList,
   gitCheck,
   readFileAsJson,
+  readTextFile,
+  removeFile,
   runVSCode,
   selectFolder,
   writeImageFile,

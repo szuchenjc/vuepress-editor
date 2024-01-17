@@ -1,11 +1,12 @@
 {
   "name": "vuepress-editor",
   "private": true,
-  "version": "0.0.3",
+  "version": "0.0.1",
   "type": "module",
   "main": "src-electron/out/main/index.cjs",
   "scripts": {
-    "dev": "vite",
+    "tauri-dev": "set VITE_APP_MODE=tauri && vite",
+    "electron-dev": "set VITE_APP_MODE=electron && vite",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
