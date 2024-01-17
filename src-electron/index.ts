@@ -12,7 +12,7 @@ function createWindow(): void {
     autoHideMenuBar: true,
     ...(process.platform === "linux" ? { icon } : {}),
     webPreferences: {
-      preload: join(__dirname, "../preload/index.mjs"),
+      preload: join(__dirname, "../preload/index.cjs"),
       sandbox: false,
     },
   })
@@ -21,10 +21,11 @@ function createWindow(): void {
     mainWindow.show()
   })
 
-  mainWindow.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url)
-    return { action: "deny" }
-  })
+  // electron 11不支持
+  // mainWindow.webContents.setWindowOpenHandler((details) => {
+  //   shell.openExternal(details.url)
+  //   return { action: "deny" }
+  // })
 
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.

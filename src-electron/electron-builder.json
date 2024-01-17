@@ -2,10 +2,7 @@
   "appId": "szuchenjc.vuepress.editor",
   "productName": "vuepress-editor",
   "asar": false,
-  "files": [
-    "src-electron/out/**/*",
-    "package.json"
-  ],
+  "files": ["src-electron/out/**/*"],
   "win": {
     "icon": "src-electron/resources/icon.ico"
   }

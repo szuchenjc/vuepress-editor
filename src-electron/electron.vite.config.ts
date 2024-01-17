@@ -9,6 +9,7 @@ export default defineConfig({
       outDir: "src-electron/out/main",
       lib: {
         entry: "src-electron/index.ts",
+        formats: ["cjs"],
       },
       // rollupOptions: {
       //   input: "src-electron/index.html",
@@ -21,7 +22,7 @@ export default defineConfig({
       outDir: "src-electron/out/preload",
       lib: {
         entry: "src-electron/preload/index.ts",
-        // formats: ["es"],
+        formats: ["cjs"],
       },
     },
   },
