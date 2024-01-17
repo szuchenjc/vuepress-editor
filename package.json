@@ -1,7 +1,7 @@
 {
   "name": "vuepress-editor",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.3",
   "type": "module",
   "main": "src-electron/out/main/index.cjs",
   "scripts": {
@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "tauri": "tauri",
     "electron": "electron-vite --config ./src-electron/electron.vite.config.ts",
-    "electron-build": "electron-builder --win --x64 --config ./src-electron/electron-builder.json"
+    "electron-build": "npm run electron build && electron-builder --win --x64 --config ./src-electron/electron-builder.json"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^2.6.2",
@@ -29,6 +29,7 @@
     "autoprefixer": "^10.4.16",
     "electron": "^11.5.0",
     "electron-builder": "^24.9.1",
+    "electron-updater": "^6.1.7",
     "electron-vite": "^2.0.0",
     "element-plus": "^2.5.1",
     "eslint": "^8.56.0",

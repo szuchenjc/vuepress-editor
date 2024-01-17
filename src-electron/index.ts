@@ -1,6 +1,7 @@
-import { app, shell, BrowserWindow } from "electron"
+import { app, shell, BrowserWindow, dialog } from "electron"
 import { join } from "path"
 import { electronApp, optimizer, is } from "@electron-toolkit/utils"
+import { autoUpdater } from "electron-updater"
 import icon from "./resources/icon.png?asset"
 
 function createWindow(): void {
@@ -60,6 +61,9 @@ app.whenReady().then(() => {
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
+
+  // 检查更新
+  autoUpdater.checkForUpdatesAndNotify()
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -73,3 +77,22 @@ app.on("window-all-closed", () => {
 
 // In this file you can include the rest of your app"s specific main process
 // code. You can also put them in separate files and require them here.
+
+// 更新事件
+autoUpdater.on("update-available", (info) => {
+  console.log("Update available:", info)
+})
+
+autoUpdater.on("update-downloaded", (info) => {
+  console.log("Update downloaded:", info)
+  dialog
+    .showMessageBox({
+      type: "info",
+      title: "安装更新",
+      message: "更新已下载，应用将重启以安装更新。",
+      buttons: ["重启"],
+    })
+    .then(() => {
+      autoUpdater.quitAndInstall()
+    })
+})

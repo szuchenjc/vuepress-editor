@@ -5,5 +5,9 @@
   "files": ["src-electron/out/**/*"],
   "win": {
     "icon": "src-electron/resources/icon.ico"
+  },
+  "publish": {
+    "provider": "generic",
+    "url": "http://localhost/updates/"
   }
 }
