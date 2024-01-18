@@ -1,8 +1,34 @@
 import { contextBridge } from "electron"
+import { ipcRenderer } from "electron"
 import { electronAPI } from "@electron-toolkit/preload"
 
 // Custom APIs for renderer
-const api = {}
+const api = {
+  runGit: (cmd: string) => {
+    return new Promise((resolve, reject) => {
+      ipcRenderer.send("run-git", cmd)
+      ipcRenderer.once("git-result", (event, result) => {
+        resolve(result)
+      })
+    })
+  },
+  selectFolder: (defaultPath: string) => {
+    return new Promise((resolve, reject) => {
+      ipcRenderer.send("select-folder", defaultPath)
+      ipcRenderer.once("folder-result", (event, result) => {
+        resolve(result)
+      })
+    })
+  },
+  readTextFile: (filePath: string) => {
+    return new Promise((resolve, reject) => {
+      ipcRenderer.send("read-text-file", filePath)
+      ipcRenderer.once("text-file", (event, result) => {
+        resolve(result)
+      })
+    })
+  },
+}
 
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise

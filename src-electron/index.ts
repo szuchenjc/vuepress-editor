@@ -1,8 +1,10 @@
-import { app, shell, BrowserWindow, dialog } from "electron"
+import { app, shell, BrowserWindow, dialog, ipcMain } from "electron"
 import { join } from "path"
 import { electronApp, optimizer, is } from "@electron-toolkit/utils"
 import { autoUpdater } from "electron-updater"
 import icon from "./resources/icon.png?asset"
+import { exec } from "child_process"
+import fs from "fs"
 
 function createWindow(): void {
   // Create the browser window.
@@ -23,10 +25,10 @@ function createWindow(): void {
   })
 
   // electron 11不支持
-  // mainWindow.webContents.setWindowOpenHandler((details) => {
-  //   shell.openExternal(details.url)
-  //   return { action: "deny" }
-  // })
+  mainWindow.webContents.setWindowOpenHandler((details) => {
+    shell.openExternal(details.url)
+    return { action: "deny" }
+  })
 
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.
@@ -95,4 +97,49 @@ autoUpdater.on("update-downloaded", (info) => {
     .then(() => {
       autoUpdater.quitAndInstall()
     })
+})
+
+ipcMain.on("run-git", (event, cmd) => {
+  exec(`git ${cmd}`, null, (err, stdout, stderr) => {
+    if (err) {
+      event.reply("git-result", `Error: ${err}`)
+      return
+    }
+    event.reply("git-result", stdout)
+  })
+})
+
+ipcMain.on("select-folder", (event, defaultPath) => {
+  dialog
+    .showOpenDialog({
+      properties: ["openDirectory"],
+      defaultPath, // 替换为你希望作为默认路径的文件夹路径
+    })
+    .then((result) => {
+      if (!result.canceled && result.filePaths.length > 0) {
+        event.reply("folder-result", result.filePaths[0])
+        // console.log(result.filePaths[0]) // 输出用户选择的单个文件夹路径
+      } else {
+        event.reply("folder-result", "")
+      }
+    })
+    .catch((err) => {
+      console.error(err)
+    })
+})
+
+ipcMain.on("read-text-file", (event, filePath) => {
+  fs.readFile(filePath, "utf8", (err, data) => {
+    if (err) {
+      console.error("Error reading file:", err)
+      return
+    }
+    event.reply("text-file", data)
+    // try {
+    //   const jsonData = JSON.parse(data)
+    //   console.log("JSON data:", jsonData)
+    // } catch (jsonErr) {
+    //   console.error("Error parsing JSON:", jsonErr)
+    // }
+  })
 })

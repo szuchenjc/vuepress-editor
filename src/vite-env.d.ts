@@ -7,3 +7,7 @@ declare module "*.vue" {
 }
 
 declare module "@native/api"
+
+interface Window {
+  api: any
+}
