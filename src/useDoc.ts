@@ -20,7 +20,7 @@ import {
   writeImageFile,
   writeJsonFile,
   writeMarkdownFile,
-} from "./tauri/api"
+} from "@native/api"
 
 export const useDoc = () => {
   const store = useStore()

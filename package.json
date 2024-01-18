@@ -10,7 +10,7 @@
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "electron": "electron-vite --config ./src-electron/electron.vite.config.ts",
+    "electron": "set VITE_APP_MODE=electron && electron-vite --config ./src-electron/electron.vite.config.ts",
     "electron-build": "npm run electron build && electron-builder --win --x64 --config ./src-electron/electron-builder.json"
   },
   "devDependencies": {

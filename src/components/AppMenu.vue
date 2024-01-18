@@ -85,7 +85,7 @@ import { ElMessageBox } from "element-plus"
 import bus from "../lib/bus"
 import { useDialog } from "../lib/useDialog"
 import AppHistory from "../components/AppHistory.vue"
-import { runVSCode } from "../tauri/api"
+import { runVSCode } from "@native/api"
 const props = defineProps({
   currentDoc: {
     type: String,

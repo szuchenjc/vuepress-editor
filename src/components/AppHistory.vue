@@ -60,7 +60,7 @@ import {
   runGitCommand,
   undo,
   writeJsonFile,
-} from "../tauri/api"
+} from "@native/api"
 import { AppSidebarItem } from "../type"
 
 const store = useStore()
