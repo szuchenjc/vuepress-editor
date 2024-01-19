@@ -156,25 +156,6 @@ export const useDoc = () => {
       }
     }
   }
-  // // 获取未提交的修改
-  // async function getUncommitList() {
-  //   // const loading = ElLoading.service()
-  //   // 获取所有未上传的变更记录
-  //   const result = (
-  //     await new Command("run-git", [
-  //       "-C",
-  //       store.docFolder,
-  //       "status",
-  //       "-u",
-  //       "-s",
-  //     ]).execute()
-  //   ).stdout
-  //     .split("\n")
-  //     .filter((t: string) => t)
-  //     .map((t: string) => t.split(" ").at(-1)!)
-  //   // loading.close()
-  //   store.uncommitList = result.filter((t: string) => !t?.startsWith("."))
-  // }
   // 点击文档，进行加载
   async function handleDocClick(data: TreeNodeData, node: Node) {
     if (!data.path) {

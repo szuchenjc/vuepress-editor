@@ -6,8 +6,6 @@ declare module "*.vue" {
   export default component
 }
 
-declare module "@native/api"
-
 interface Window {
   api: any
 }
